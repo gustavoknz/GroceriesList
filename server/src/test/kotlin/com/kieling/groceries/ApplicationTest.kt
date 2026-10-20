@@ -17,4 +17,13 @@ class ApplicationTest {
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals("Hello, Ktor!", response.bodyAsText())
     }
+
+    @Test
+    fun testNotFound() = testApplication {
+        application {
+            module()
+        }
+        val response = client.get("/nonexistent")
+        assertEquals(HttpStatusCode.NotFound, response.status)
+    }
 }
