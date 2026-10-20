@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1017859145345",
+    "project_id": "groceries-list-85bd5",
+    "storage_bucket": "groceries-list-85bd5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1017859145345:android:9d12ec1c52155ef89b5780",
+        "android_client_info": {
+          "package_name": "com.kieling.groceries"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAO_IHK-zAViFZiAjS3Gyx2O5QEeXrKP6s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
