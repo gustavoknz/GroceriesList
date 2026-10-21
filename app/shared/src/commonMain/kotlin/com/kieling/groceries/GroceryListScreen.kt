@@ -142,7 +142,7 @@ fun GroceryListScreen() {
                                         .clickable {
                                             items =
                                                 items.map {
-                                                    if (it.id == item.id) item.copy(isChecked = !item.isChecked) else item
+                                                    if (it.id == item.id) it.copy(isChecked = !it.isChecked) else it
                                                 }
                                         },
                                 colors =
