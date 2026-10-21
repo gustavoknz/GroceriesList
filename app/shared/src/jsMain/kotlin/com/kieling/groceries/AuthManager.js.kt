@@ -12,6 +12,20 @@ actual class AuthManager actual constructor() {
         return Result.failure(Exception("Configure Firebase Web SDK for Google Sign-In"))
     }
 
+    actual suspend fun signInWithEmail(
+        email: String,
+        password: String,
+    ): Result<AuthUser> {
+        return Result.failure(Exception("Configure Firebase Web SDK for Email Sign-In"))
+    }
+
+    actual suspend fun signUpWithEmail(
+        email: String,
+        password: String,
+    ): Result<AuthUser> {
+        return Result.failure(Exception("Configure Firebase Web SDK for Email Sign-Up"))
+    }
+
     actual suspend fun signOut() {
         _currentUser.value = null
     }

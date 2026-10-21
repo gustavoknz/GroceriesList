@@ -45,7 +45,7 @@ fun GroceryListScreen() {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Groceries (${currentUser?.email ?: "User"})") },
+                    title = { Text("Groceries List") },
                     actions = {
                         TextButton(
                             onClick = {
@@ -73,6 +73,17 @@ fun GroceryListScreen() {
                         .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                // Welcome message showing user's name
+                Text(
+                    text = "Welcome, ${currentUser?.displayName ?: currentUser?.email ?: "User"}!",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp),
+                )
+
                 // Input row to add new grocery item
                 Row(
                     modifier = Modifier.fillMaxWidth(),
