@@ -12,7 +12,20 @@
           "package_name": "com.kieling.groceries"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1017859145345-rhmtho558100m8sr4recei6iv06ge7bl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kieling.groceries",
+            "certificate_hash": "435fa5d2905cbe38e29ab00dd65e1238305ee146"
+          }
+        },
+        {
+          "client_id": "1017859145345-o8rpj32j3dr6sun4s7vm656jvq8q61ne.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAO_IHK-zAViFZiAjS3Gyx2O5QEeXrKP6s"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1017859145345-o8rpj32j3dr6sun4s7vm656jvq8q61ne.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
