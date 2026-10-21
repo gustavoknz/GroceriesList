@@ -23,6 +23,8 @@ object CurrentActivityHolder {
 }
 
 actual class AuthManager actual constructor() {
+    private val tag = "AuthManager"
+
     private val firebaseAuth: FirebaseAuth? by lazy {
         try {
             FirebaseAuth.getInstance()
@@ -53,16 +55,26 @@ actual class AuthManager actual constructor() {
                     }
             }
         } catch (e: Exception) {
-            // Ignored if Firebase is not yet configured
+            Logger.e(tag, "Error adding auth state listener", e)
         }
     }
 
     actual suspend fun signInWithGoogle(): Result<AuthUser> {
+        Logger.i(tag, "Attempting Google Sign-In...")
         return try {
-            val auth = firebaseAuth ?: return Result.failure(Exception("Firebase is not initialized. Please add google-services.json."))
+            val auth =
+                firebaseAuth ?: run {
+                    val err = Exception("Firebase is not initialized. Please add google-services.json.")
+                    Logger.e(tag, "Google Sign-In failed: Firebase not initialized", err)
+                    return Result.failure(err)
+                }
             val activity =
                 CurrentActivityHolder.currentActivity
-                    ?: return Result.failure(Exception("Active Activity not available. Please try again."))
+                    ?: run {
+                        val err = Exception("Active Activity not available. Please try again.")
+                        Logger.e(tag, "Google Sign-In failed: Active Activity not available", err)
+                        return Result.failure(err)
+                    }
 
             val credentialManager = CredentialManager.create(activity)
             val googleIdOption =
@@ -88,14 +100,20 @@ actual class AuthManager actual constructor() {
                 if (user != null) {
                     val authUser = AuthUser(user.uid, user.email, user.displayName, user.photoUrl?.toString())
                     _currentUser.value = authUser
+                    Logger.i(tag, "Google Sign-In successful for user: ${authUser.email} (${authUser.uid})")
                     Result.success(authUser)
                 } else {
-                    Result.failure(Exception("Firebase sign-in failed: user is null"))
+                    val err = Exception("Firebase sign-in failed: user is null")
+                    Logger.e(tag, "Google Sign-In failed", err)
+                    Result.failure(err)
                 }
             } else {
-                Result.failure(Exception("Invalid credential type returned from Google Sign-In"))
+                val err = Exception("Invalid credential type returned from Google Sign-In")
+                Logger.e(tag, "Google Sign-In failed", err)
+                Result.failure(err)
             }
         } catch (e: Exception) {
+            Logger.e(tag, "Google Sign-In threw exception", e)
             Result.failure(e)
         }
     }
@@ -104,18 +122,28 @@ actual class AuthManager actual constructor() {
         email: String,
         password: String,
     ): Result<AuthUser> {
+        Logger.i(tag, "Attempting Email Sign-In for email: $email")
         return try {
-            val auth = firebaseAuth ?: return Result.failure(Exception("Firebase is not initialized."))
+            val auth =
+                firebaseAuth ?: run {
+                    val err = Exception("Firebase is not initialized.")
+                    Logger.e(tag, "Email Sign-In failed: Firebase not initialized", err)
+                    return Result.failure(err)
+                }
             val authResult = auth.signInWithEmailAndPassword(email, password).await()
             val user = authResult.user
             if (user != null) {
                 val authUser = AuthUser(user.uid, user.email, user.displayName, user.photoUrl?.toString())
                 _currentUser.value = authUser
+                Logger.i(tag, "Email Sign-In successful for user: ${authUser.email} (${authUser.uid})")
                 Result.success(authUser)
             } else {
-                Result.failure(Exception("Email sign-in failed"))
+                val err = Exception("Email sign-in failed")
+                Logger.e(tag, "Email Sign-In failed: user is null", err)
+                Result.failure(err)
             }
         } catch (e: Exception) {
+            Logger.e(tag, "Email Sign-In threw exception for email: $email", e)
             Result.failure(e)
         }
     }
@@ -124,27 +152,39 @@ actual class AuthManager actual constructor() {
         email: String,
         password: String,
     ): Result<AuthUser> {
+        Logger.i(tag, "Attempting Email Sign-Up for email: $email")
         return try {
-            val auth = firebaseAuth ?: return Result.failure(Exception("Firebase is not initialized."))
+            val auth =
+                firebaseAuth ?: run {
+                    val err = Exception("Firebase is not initialized.")
+                    Logger.e(tag, "Email Sign-Up failed: Firebase not initialized", err)
+                    return Result.failure(err)
+                }
             val authResult = auth.createUserWithEmailAndPassword(email, password).await()
             val user = authResult.user
             if (user != null) {
                 val authUser = AuthUser(user.uid, user.email, user.displayName, user.photoUrl?.toString())
                 _currentUser.value = authUser
+                Logger.i(tag, "Email Sign-Up successful for user: ${authUser.email} (${authUser.uid})")
                 Result.success(authUser)
             } else {
-                Result.failure(Exception("Email sign-up failed"))
+                val err = Exception("Email sign-up failed")
+                Logger.e(tag, "Email Sign-Up failed: user is null", err)
+                Result.failure(err)
             }
         } catch (e: Exception) {
+            Logger.e(tag, "Email Sign-Up threw exception for email: $email", e)
             Result.failure(e)
         }
     }
 
     actual suspend fun signOut() {
+        Logger.i(tag, "Signing out user...")
         try {
             firebaseAuth?.signOut()
+            Logger.i(tag, "Sign-out successful")
         } catch (e: Exception) {
-            // Ignored
+            Logger.e(tag, "Error during sign-out", e)
         }
         _currentUser.value = null
     }
