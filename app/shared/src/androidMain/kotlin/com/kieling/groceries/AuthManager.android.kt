@@ -76,10 +76,24 @@ actual class AuthManager actual constructor() {
                         return Result.failure(err)
                     }
 
+            val clientId =
+                try {
+                    val resId = activity.resources.getIdentifier("google_client_id", "string", activity.packageName)
+                    if (resId != 0) {
+                        activity.getString(resId)
+                    } else {
+                        throw IllegalStateException("google_client_id resource not found")
+                    }
+                } catch (e: Exception) {
+                    val err = Exception("Google Client ID not configured: ${e.message}")
+                    Logger.e(tag, "Google Sign-In failed: Client ID missing", err)
+                    return Result.failure(err)
+                }
+
             val credentialManager = CredentialManager.create(activity)
             val googleIdOption =
                 GetGoogleIdOption.Builder()
-                    .setServerClientId("1017859145345-o8rpj32j3dr6sun4s7vm656jvq8q61ne.apps.googleusercontent.com")
+                    .setServerClientId(clientId)
                     .setFilterByAuthorizedAccounts(false)
                     .build()
 

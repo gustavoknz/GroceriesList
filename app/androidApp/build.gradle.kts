@@ -1,10 +1,20 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
     id("com.google.gms.google-services")
 }
+
+val localProperties =
+    Properties().apply {
+        val file = rootProject.file("local.properties")
+        if (file.exists()) {
+            file.inputStream().use { load(it) }
+        }
+    }
+val googleClientId = localProperties.getProperty("GOOGLE_CLIENT_ID", "1017859145345-o8rpj32j3dr6sun4s7vm656jvq8q61ne.apps.googleusercontent.com")
 
 kotlin {
     compilerOptions {
@@ -35,6 +45,7 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+        resValue("string", "google_client_id", googleClientId)
     }
     packaging {
         resources {
@@ -56,5 +67,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
+        resValues = true
     }
 }
