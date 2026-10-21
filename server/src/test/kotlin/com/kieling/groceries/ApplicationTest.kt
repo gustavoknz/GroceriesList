@@ -7,23 +7,24 @@ import io.ktor.server.testing.*
 import kotlin.test.*
 
 class ApplicationTest {
+    @Test
+    fun testRoot() =
+        testApplication {
+            application {
+                module()
+            }
+            val response = client.get("/")
+            assertEquals(HttpStatusCode.OK, response.status)
+            assertEquals("Hello, Ktor!", response.bodyAsText())
+        }
 
     @Test
-    fun testRoot() = testApplication {
-        application {
-            module()
+    fun testNotFound() =
+        testApplication {
+            application {
+                module()
+            }
+            val response = client.get("/nonexistent")
+            assertEquals(HttpStatusCode.NotFound, response.status)
         }
-        val response = client.get("/")
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals("Hello, Ktor!", response.bodyAsText())
-    }
-
-    @Test
-    fun testNotFound() = testApplication {
-        application {
-            module()
-        }
-        val response = client.get("/nonexistent")
-        assertEquals(HttpStatusCode.NotFound, response.status)
-    }
 }

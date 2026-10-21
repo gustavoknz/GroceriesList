@@ -25,7 +25,7 @@ fun GroceryListScreen() {
                 scope.launch {
                     authManager.signInWithGoogle()
                 }
-            }
+            },
         )
     } else {
         var items by remember {
@@ -36,8 +36,8 @@ fun GroceryListScreen() {
                     GroceryItem(3, "Bread"),
                     GroceryItem(4, "Eggs"),
                     GroceryItem(5, "Cheese"),
-                    GroceryItem(6, "Coffee")
-                )
+                    GroceryItem(6, "Coffee"),
+                ),
             )
         }
         var newItemName by remember { mutableStateOf("") }
@@ -52,37 +52,39 @@ fun GroceryListScreen() {
                                 scope.launch {
                                     authManager.signOut()
                                 }
-                            }
+                            },
                         ) {
                             Text("Sign Out", color = MaterialTheme.colorScheme.error)
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+                    colors =
+                        TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        ),
                 )
-            }
+            },
         ) { paddingValues ->
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 // Input row to add new grocery item
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     OutlinedTextField(
                         value = newItemName,
                         onValueChange = { newItemName = it },
                         modifier = Modifier.weight(1f),
                         placeholder = { Text("Add new grocery item...") },
-                        singleLine = true
+                        singleLine = true,
                     )
                     Button(
                         onClick = {
@@ -91,7 +93,7 @@ fun GroceryListScreen() {
                                 items = items + GroceryItem(id = newId, name = newItemName.trim())
                                 newItemName = ""
                             }
-                        }
+                        },
                     ) {
                         Text("Add")
                     }
@@ -102,74 +104,85 @@ fun GroceryListScreen() {
                 // Grocery Items List
                 if (items.isEmpty()) {
                     Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f),
-                        contentAlignment = Alignment.Center
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .weight(1f),
+                        contentAlignment = Alignment.Center,
                     ) {
                         Text(
                             text = "Your grocery list is empty!",
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.bodyLarge,
                         )
                     }
                 } else {
                     LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         items(items, key = { it.id }) { item ->
                             Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        items = items.map {
-                                            if (it.id == item.id) item.copy(isChecked = !item.isChecked) else item
-                                        }
-                                    },
-                                colors = CardDefaults.cardColors(
-                                    containerColor = if (item.isChecked)
-                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-                                    else
-                                        MaterialTheme.colorScheme.surface
-                                )
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            items =
+                                                items.map {
+                                                    if (it.id == item.id) item.copy(isChecked = !item.isChecked) else item
+                                                }
+                                        },
+                                colors =
+                                    CardDefaults.cardColors(
+                                        containerColor =
+                                            if (item.isChecked) {
+                                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                                            } else {
+                                                MaterialTheme.colorScheme.surface
+                                            },
+                                    ),
                             ) {
                                 Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    modifier =
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 12.dp),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                    horizontalArrangement = Arrangement.SpaceBetween,
                                 ) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f),
                                     ) {
                                         Checkbox(
                                             checked = item.isChecked,
                                             onCheckedChange = { checked ->
-                                                items = items.map {
-                                                    if (it.id == item.id) item.copy(isChecked = checked) else it
-                                                }
-                                            }
+                                                items =
+                                                    items.map {
+                                                        if (it.id == item.id) item.copy(isChecked = checked) else it
+                                                    }
+                                            },
                                         )
                                         Text(
                                             text = item.name,
                                             style = MaterialTheme.typography.bodyLarge,
                                             textDecoration = if (item.isChecked) TextDecoration.LineThrough else TextDecoration.None,
-                                            color = if (item.isChecked)
-                                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                            else
-                                                MaterialTheme.colorScheme.onSurface
+                                            color =
+                                                if (item.isChecked) {
+                                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                                } else {
+                                                    MaterialTheme.colorScheme.onSurface
+                                                },
                                         )
                                     }
 
                                     TextButton(
                                         onClick = {
                                             items = items.filter { it.id != item.id }
-                                        }
+                                        },
                                     ) {
                                         Text("Delete", color = MaterialTheme.colorScheme.error)
                                     }

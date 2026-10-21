@@ -14,24 +14,26 @@ actual class AuthManager actual constructor() {
         }
     }
 
-    private val _currentUser = MutableStateFlow<AuthUser?>(
-        try {
-            firebaseAuth?.currentUser?.let {
-                AuthUser(it.uid, it.email, it.displayName, it.photoUrl?.toString())
-            }
-        } catch (e: Exception) {
-            null
-        }
-    )
+    private val _currentUser =
+        MutableStateFlow<AuthUser?>(
+            try {
+                firebaseAuth?.currentUser?.let {
+                    AuthUser(it.uid, it.email, it.displayName, it.photoUrl?.toString())
+                }
+            } catch (e: Exception) {
+                null
+            },
+        )
     actual val currentUser: StateFlow<AuthUser?> = _currentUser.asStateFlow()
 
     init {
         try {
             firebaseAuth?.addAuthStateListener { auth ->
                 val user = auth.currentUser
-                _currentUser.value = user?.let {
-                    AuthUser(it.uid, it.email, it.displayName, it.photoUrl?.toString())
-                }
+                _currentUser.value =
+                    user?.let {
+                        AuthUser(it.uid, it.email, it.displayName, it.photoUrl?.toString())
+                    }
             }
         } catch (e: Exception) {
             // Ignored if Firebase is not yet configured

@@ -11,32 +11,34 @@ import androidx.compose.ui.unit.dp
 fun LoginScreen(onSignInClick: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.background,
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
                 text = "Groceries List",
                 style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "Sign in with your Google account to continue",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(modifier = Modifier.height(32.dp))
             Button(
                 onClick = onSignInClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
             ) {
                 Text("Sign in with Google", style = MaterialTheme.typography.bodyLarge)
             }
