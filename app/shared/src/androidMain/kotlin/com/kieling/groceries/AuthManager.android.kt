@@ -79,7 +79,7 @@ actual class AuthManager actual constructor() {
             val credentialManager = CredentialManager.create(activity)
             val googleIdOption =
                 GetGoogleIdOption.Builder()
-                    .setServerClientId("1017859145345-0d0r9d12ec1c52155ef89b5780.apps.googleusercontent.com")
+                    .setServerClientId("1017859145345-o8rpj32j3dr6sun4s7vm656jvq8q61ne.apps.googleusercontent.com")
                     .setFilterByAuthorizedAccounts(false)
                     .build()
 
