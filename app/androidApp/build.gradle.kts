@@ -4,6 +4,9 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
+    kotlin("android")
+    id("kotlin-kapt")
+    alias(libs.plugins.daggerHilt)
     id("com.google.gms.google-services")
 }
 
@@ -25,6 +28,8 @@ dependencies {
     implementation(project(":app:shared"))
 
     implementation(libs.androidx.activity.compose)
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
 
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:35.0.2"))
