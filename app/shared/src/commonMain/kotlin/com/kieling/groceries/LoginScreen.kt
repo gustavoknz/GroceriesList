@@ -7,17 +7,33 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kieling.groceries.data.repository.AuthRepositoryImpl
+import com.kieling.groceries.domain.usecase.ObserveCurrentUserUseCase
+import com.kieling.groceries.domain.usecase.SignInWithEmailUseCase
+import com.kieling.groceries.domain.usecase.SignInWithGoogleUseCase
+import com.kieling.groceries.domain.usecase.SignUpWithEmailUseCase
+import com.kieling.groceries.presentation.auth.AuthViewModel
 
 @Composable
-fun LoginScreen(onSignInClick: () -> Unit) {
-    val authManager = remember { AuthManager() }
-    val scope = rememberCoroutineScope()
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var isRegistering by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    var isLoading by remember { mutableStateOf(false) }
+fun LoginScreen(
+    authViewModel: AuthViewModel =
+        remember {
+            val authRepo = AuthRepositoryImpl()
+            AuthViewModel(
+                signInWithEmailUseCase = SignInWithEmailUseCase(authRepo),
+                signUpWithEmailUseCase = SignUpWithEmailUseCase(authRepo),
+                signInWithGoogleUseCase = SignInWithGoogleUseCase(authRepo),
+                observeCurrentUserUseCase = ObserveCurrentUserUseCase(authRepo),
+            )
+        },
+    onSignInClick: () -> Unit,
+) {
+    val email by authViewModel.email.collectAsStateWithLifecycle()
+    val password by authViewModel.password.collectAsStateWithLifecycle()
+    val isRegistering by authViewModel.isRegistering.collectAsStateWithLifecycle()
+    val errorMessage by authViewModel.errorMessage.collectAsStateWithLifecycle()
+    val isLoading by authViewModel.isLoading.collectAsStateWithLifecycle()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -46,7 +62,7 @@ fun LoginScreen(onSignInClick: () -> Unit) {
 
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = { authViewModel.updateEmail(it) },
                 label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -54,7 +70,7 @@ fun LoginScreen(onSignInClick: () -> Unit) {
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = { authViewModel.updatePassword(it) },
                 label = { Text("Password") },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
@@ -73,26 +89,7 @@ fun LoginScreen(onSignInClick: () -> Unit) {
             Spacer(modifier = Modifier.height(20.dp))
 
             Button(
-                onClick = {
-                    if (email.isNotBlank() && password.isNotBlank()) {
-                        isLoading = true
-                        errorMessage = null
-                        scope.launch {
-                            val result =
-                                if (isRegistering) {
-                                    authManager.signUpWithEmail(email, password)
-                                } else {
-                                    authManager.signInWithEmail(email, password)
-                                }
-                            isLoading = false
-                            result.onFailure { err ->
-                                errorMessage = err.message ?: "Authentication failed"
-                            }
-                        }
-                    } else {
-                        errorMessage = "Please enter email and password"
-                    }
-                },
+                onClick = { authViewModel.authenticate() },
                 modifier =
                     Modifier
                         .fillMaxWidth()
@@ -105,10 +102,7 @@ fun LoginScreen(onSignInClick: () -> Unit) {
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedButton(
-                onClick = {
-                    isRegistering = !isRegistering
-                    errorMessage = null
-                },
+                onClick = { authViewModel.toggleIsRegistering() },
                 modifier =
                     Modifier
                         .fillMaxWidth()

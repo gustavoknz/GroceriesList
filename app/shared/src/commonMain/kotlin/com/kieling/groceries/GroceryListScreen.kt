@@ -11,37 +11,55 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kieling.groceries.data.repository.AuthRepositoryImpl
+import com.kieling.groceries.data.repository.GroceryRepositoryImpl
+import com.kieling.groceries.domain.usecase.*
+import com.kieling.groceries.presentation.auth.AuthViewModel
+import com.kieling.groceries.presentation.grocery.GroceryListViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun GroceryListScreen() {
-    val authManager = remember { AuthManager() }
-    val currentUser by authManager.currentUser.collectAsStateWithLifecycle()
+fun GroceryListScreen(
+    groceryViewModel: GroceryListViewModel =
+        remember {
+            val authRepo = AuthRepositoryImpl()
+            val groceryRepo = GroceryRepositoryImpl()
+            GroceryListViewModel(
+                observeCurrentUserUseCase = ObserveCurrentUserUseCase(authRepo),
+                getGroceryItemsUseCase = GetGroceryItemsUseCase(groceryRepo),
+                addGroceryItemUseCase = AddGroceryItemUseCase(groceryRepo),
+                toggleGroceryItemUseCase = ToggleGroceryItemUseCase(groceryRepo),
+                deleteGroceryItemUseCase = DeleteGroceryItemUseCase(groceryRepo),
+                signOutUseCase = SignOutUseCase(authRepo),
+                signInWithGoogleUseCase = SignInWithGoogleUseCase(authRepo),
+            )
+        },
+    authViewModel: AuthViewModel =
+        remember {
+            val authRepo = AuthRepositoryImpl()
+            AuthViewModel(
+                signInWithEmailUseCase = SignInWithEmailUseCase(authRepo),
+                signUpWithEmailUseCase = SignUpWithEmailUseCase(authRepo),
+                signInWithGoogleUseCase = SignInWithGoogleUseCase(authRepo),
+                observeCurrentUserUseCase = ObserveCurrentUserUseCase(authRepo),
+            )
+        },
+) {
+    val currentUser by groceryViewModel.currentUser.collectAsStateWithLifecycle()
+    val items by groceryViewModel.items.collectAsStateWithLifecycle()
+    val newItemName by groceryViewModel.newItemName.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
 
     if (currentUser == null) {
         LoginScreen(
+            authViewModel = authViewModel,
             onSignInClick = {
                 scope.launch {
-                    authManager.signInWithGoogle()
+                    authViewModel.signInWithGoogle()
                 }
             },
         )
     } else {
-        var items by remember {
-            mutableStateOf(
-                listOf(
-                    GroceryItem(1, "Apples"),
-                    GroceryItem(2, "Milk"),
-                    GroceryItem(3, "Bread"),
-                    GroceryItem(4, "Eggs"),
-                    GroceryItem(5, "Cheese"),
-                    GroceryItem(6, "Coffee"),
-                ),
-            )
-        }
-        var newItemName by remember { mutableStateOf("") }
-
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -49,9 +67,7 @@ fun GroceryListScreen() {
                     actions = {
                         TextButton(
                             onClick = {
-                                scope.launch {
-                                    authManager.signOut()
-                                }
+                                groceryViewModel.signOut()
                             },
                         ) {
                             Text("Sign Out", color = MaterialTheme.colorScheme.error)
@@ -92,18 +108,14 @@ fun GroceryListScreen() {
                 ) {
                     OutlinedTextField(
                         value = newItemName,
-                        onValueChange = { newItemName = it },
+                        onValueChange = { groceryViewModel.updateNewItemName(it) },
                         modifier = Modifier.weight(1f),
                         placeholder = { Text("Add new grocery item...") },
                         singleLine = true,
                     )
                     Button(
                         onClick = {
-                            if (newItemName.isNotBlank()) {
-                                val newId = (items.maxOfOrNull { it.id } ?: 0) + 1
-                                items = items + GroceryItem(id = newId, name = newItemName.trim())
-                                newItemName = ""
-                            }
+                            groceryViewModel.addItem()
                         },
                     ) {
                         Text("Add")
@@ -140,10 +152,7 @@ fun GroceryListScreen() {
                                     Modifier
                                         .fillMaxWidth()
                                         .clickable {
-                                            items =
-                                                items.map {
-                                                    if (it.id == item.id) it.copy(isChecked = !it.isChecked) else it
-                                                }
+                                            groceryViewModel.toggleItem(item.id)
                                         },
                                 colors =
                                     CardDefaults.cardColors(
@@ -170,11 +179,8 @@ fun GroceryListScreen() {
                                     ) {
                                         Checkbox(
                                             checked = item.isChecked,
-                                            onCheckedChange = { checked ->
-                                                items =
-                                                    items.map {
-                                                        if (it.id == item.id) item.copy(isChecked = checked) else it
-                                                    }
+                                            onCheckedChange = { _ ->
+                                                groceryViewModel.toggleItem(item.id)
                                             },
                                         )
                                         Text(
@@ -192,7 +198,7 @@ fun GroceryListScreen() {
 
                                     TextButton(
                                         onClick = {
-                                            items = items.filter { it.id != item.id }
+                                            groceryViewModel.deleteItem(item.id)
                                         },
                                     ) {
                                         Text("Delete", color = MaterialTheme.colorScheme.error)
