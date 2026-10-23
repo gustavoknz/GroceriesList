@@ -92,13 +92,15 @@ actual class AuthManager actual constructor() {
 
             val credentialManager = CredentialManager.create(activity)
             val googleIdOption =
-                GetGoogleIdOption.Builder()
+                GetGoogleIdOption
+                    .Builder()
                     .setServerClientId(clientId)
                     .setFilterByAuthorizedAccounts(false)
                     .build()
 
             val request =
-                GetCredentialRequest.Builder()
+                GetCredentialRequest
+                    .Builder()
                     .addCredentialOption(googleIdOption)
                     .build()
 

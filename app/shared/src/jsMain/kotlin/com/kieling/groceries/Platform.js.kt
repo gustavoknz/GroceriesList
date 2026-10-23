@@ -7,7 +7,8 @@ class JsPlatform : Platform {
     private val browserList = listOf("Chrome", "Firefox", "Safari", "Edge")
 
     override val name: String =
-        userAgent.findAnyOf(browserList, ignoreCase = true)
+        userAgent
+            .findAnyOf(browserList, ignoreCase = true)
             ?.let { (startIndex) -> userAgent.substring(startIndex).substringBefore(" ") }
             ?: "Unknown"
 }
