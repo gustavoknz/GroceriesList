@@ -4,8 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kieling.groceries.AuthUser
 import com.kieling.groceries.GroceryItem
-import com.kieling.groceries.data.repository.AuthRepositoryImpl
-import com.kieling.groceries.data.repository.GroceryRepositoryImpl
 import com.kieling.groceries.domain.usecase.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,13 +11,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class GroceryListViewModel(
-    observeCurrentUserUseCase: ObserveCurrentUserUseCase = ObserveCurrentUserUseCase(AuthRepositoryImpl()),
-    getGroceryItemsUseCase: GetGroceryItemsUseCase = GetGroceryItemsUseCase(GroceryRepositoryImpl()),
-    private val addGroceryItemUseCase: AddGroceryItemUseCase = AddGroceryItemUseCase(GroceryRepositoryImpl()),
-    private val toggleGroceryItemUseCase: ToggleGroceryItemUseCase = ToggleGroceryItemUseCase(GroceryRepositoryImpl()),
-    private val deleteGroceryItemUseCase: DeleteGroceryItemUseCase = DeleteGroceryItemUseCase(GroceryRepositoryImpl()),
-    private val signOutUseCase: SignOutUseCase = SignOutUseCase(AuthRepositoryImpl()),
-    private val signInWithGoogleUseCase: SignInWithGoogleUseCase = SignInWithGoogleUseCase(AuthRepositoryImpl()),
+    observeCurrentUserUseCase: ObserveCurrentUserUseCase,
+    getGroceryItemsUseCase: GetGroceryItemsUseCase,
+    private val addGroceryItemUseCase: AddGroceryItemUseCase,
+    private val toggleGroceryItemUseCase: ToggleGroceryItemUseCase,
+    private val deleteGroceryItemUseCase: DeleteGroceryItemUseCase,
+    private val signOutUseCase: SignOutUseCase,
+    private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
 ) : ViewModel() {
     val currentUser: StateFlow<AuthUser?> = observeCurrentUserUseCase()
     val items: StateFlow<List<GroceryItem>> = getGroceryItemsUseCase()
