@@ -13,7 +13,7 @@ val localProperties =
             file.inputStream().use { load(it) }
         }
     }
-val googleClientId: String? = localProperties.getProperty("GOOGLE_CLIENT_ID", "1017859145345-o8rpj32j3dr6sun4s7vm656jvq8q61ne.apps.googleusercontent.com")
+val googleClientId: String? = localProperties.getProperty("GOOGLE_CLIENT_ID")
 
 dependencies {
     implementation(project(":app:shared"))
