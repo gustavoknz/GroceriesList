@@ -28,9 +28,9 @@ dependencies {
     implementation(libs.androidx.activity.compose)
 
     // Import the Firebase BoM
-    implementation(platform("com.google.firebase:firebase-bom:35.0.2"))
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-analytics")
+    implementation(platform(libs.firebaseBom))
+    implementation(libs.firebaseAuth)
+    implementation(libs.firebaseAnalytics)
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
