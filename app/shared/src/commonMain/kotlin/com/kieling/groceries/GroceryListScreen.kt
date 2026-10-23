@@ -21,12 +21,10 @@ fun GroceryListScreen(
     groceryViewModel: GroceryListViewModel = koinViewModel(),
     authViewModel: AuthViewModel = koinViewModel(),
 ) {
-    val currentUser by groceryViewModel.currentUser.collectAsStateWithLifecycle()
-    val items by groceryViewModel.items.collectAsStateWithLifecycle()
-    val newItemName by groceryViewModel.newItemName.collectAsStateWithLifecycle()
+    val uiState by groceryViewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
 
-    if (currentUser == null) {
+    if (uiState.currentUser == null) {
         LoginScreen(
             authViewModel = authViewModel,
             onSignInClick = {
@@ -67,7 +65,7 @@ fun GroceryListScreen(
             ) {
                 // Welcome message showing user's name
                 Text(
-                    text = "Welcome, ${currentUser?.displayName ?: currentUser?.email ?: "User"}!",
+                    text = "Welcome, ${uiState.currentUser?.displayName ?: uiState.currentUser?.email ?: "User"}!",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary,
                     modifier =
@@ -83,7 +81,7 @@ fun GroceryListScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     OutlinedTextField(
-                        value = newItemName,
+                        value = uiState.newItemName,
                         onValueChange = { groceryViewModel.updateNewItemName(it) },
                         modifier = Modifier.weight(1f),
                         placeholder = { Text("Add new grocery item...") },
@@ -101,7 +99,7 @@ fun GroceryListScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Grocery Items List
-                if (items.isEmpty()) {
+                if (uiState.items.isEmpty()) {
                     Box(
                         modifier =
                             Modifier
@@ -122,7 +120,7 @@ fun GroceryListScreen(
                                 .weight(1f),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        items(items, key = { it.id }) { item ->
+                        items(uiState.items, key = { it.id }) { item ->
                             Card(
                                 modifier =
                                     Modifier

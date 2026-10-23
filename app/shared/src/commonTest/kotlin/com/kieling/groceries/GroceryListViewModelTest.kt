@@ -39,7 +39,7 @@ class GroceryListViewModelTest {
     @Test
     fun testInitialItemsLoaded() =
         runTest {
-            val items = viewModel.items.value
+            val items = viewModel.uiState.value.items
             assertTrue(items.isNotEmpty())
         }
 
@@ -50,32 +50,38 @@ class GroceryListViewModelTest {
             viewModel.addItem()
             advanceUntilIdle()
 
-            val items = viewModel.items.value
+            val items = viewModel.uiState.value.items
             assertTrue(items.any { it.name == "Bananas" })
-            assertEquals("", viewModel.newItemName.value)
+            assertEquals("", viewModel.uiState.value.newItemName)
         }
 
     @Test
     fun testToggleGroceryItem() =
         runTest {
-            val initialItem = viewModel.items.value.first()
+            val initialItem =
+                viewModel.uiState.value.items
+                    .first()
             val initialChecked = initialItem.isChecked
 
             viewModel.toggleItem(initialItem.id)
             advanceUntilIdle()
 
-            val updatedItem = viewModel.items.value.first { it.id == initialItem.id }
+            val updatedItem =
+                viewModel.uiState.value.items
+                    .first { it.id == initialItem.id }
             assertEquals(!initialChecked, updatedItem.isChecked)
         }
 
     @Test
     fun testDeleteGroceryItem() =
         runTest {
-            val targetItem = viewModel.items.value.first()
+            val targetItem =
+                viewModel.uiState.value.items
+                    .first()
             viewModel.deleteItem(targetItem.id)
             advanceUntilIdle()
 
-            val items = viewModel.items.value
+            val items = viewModel.uiState.value.items
             assertFalse(items.any { it.id == targetItem.id })
         }
 }

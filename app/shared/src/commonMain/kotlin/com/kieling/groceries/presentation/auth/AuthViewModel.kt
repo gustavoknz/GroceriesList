@@ -10,7 +10,16 @@ import com.kieling.groceries.domain.usecase.SignUpWithEmailUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+data class AuthUiState(
+    val email: String = "",
+    val password: String = "",
+    val isRegistering: Boolean = false,
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
+)
 
 class AuthViewModel(
     private val signInWithEmailUseCase: SignInWithEmailUseCase,
@@ -20,77 +29,61 @@ class AuthViewModel(
 ) : ViewModel() {
     val currentUser: StateFlow<AuthUser?> = observeCurrentUserUseCase()
 
-    private val _email = MutableStateFlow("")
-    val email: StateFlow<String> = _email.asStateFlow()
-
-    private val _password = MutableStateFlow("")
-    val password: StateFlow<String> = _password.asStateFlow()
-
-    private val _isRegistering = MutableStateFlow(false)
-    val isRegistering: StateFlow<Boolean> = _isRegistering.asStateFlow()
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+    private val _uiState = MutableStateFlow(AuthUiState())
+    val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     fun updateEmail(newEmail: String) {
-        _email.value = newEmail
+        _uiState.update { it.copy(email = newEmail) }
     }
 
     fun updatePassword(newPassword: String) {
-        _password.value = newPassword
+        _uiState.update { it.copy(password = newPassword) }
     }
 
     fun toggleIsRegistering() {
-        _isRegistering.value = !_isRegistering.value
-        _errorMessage.value = null
+        _uiState.update { it.copy(isRegistering = !it.isRegistering, errorMessage = null) }
     }
 
     fun clearError() {
-        _errorMessage.value = null
+        _uiState.update { it.copy(errorMessage = null) }
     }
 
     fun authenticate(onSuccess: () -> Unit = {}) {
-        val emailVal = _email.value
-        val passwordVal = _password.value
-        if (emailVal.isBlank() || passwordVal.isBlank()) {
-            _errorMessage.value = "Please enter email and password"
+        val state = _uiState.value
+        if (state.email.isBlank() || state.password.isBlank()) {
+            _uiState.update { it.copy(errorMessage = "Please enter email and password") }
             return
         }
 
-        _isLoading.value = true
-        _errorMessage.value = null
+        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
         viewModelScope.launch {
             val result =
-                if (_isRegistering.value) {
-                    signUpWithEmailUseCase(emailVal, passwordVal)
+                if (state.isRegistering) {
+                    signUpWithEmailUseCase(state.email, state.password)
                 } else {
-                    signInWithEmailUseCase(emailVal, passwordVal)
+                    signInWithEmailUseCase(state.email, state.password)
                 }
-            _isLoading.value = false
+            _uiState.update { it.copy(isLoading = false) }
             result.fold(
                 onSuccess = { onSuccess() },
                 onFailure = { err ->
-                    _errorMessage.value = err.message ?: "Authentication failed"
+                    _uiState.update { it.copy(errorMessage = err.message ?: "Authentication failed") }
                 },
             )
         }
     }
 
     fun signInWithGoogle(onSuccess: () -> Unit = {}) {
-        _isLoading.value = true
-        _errorMessage.value = null
+        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
         viewModelScope.launch {
             val result = signInWithGoogleUseCase()
-            _isLoading.value = false
+            _uiState.update { it.copy(isLoading = false) }
             result.fold(
                 onSuccess = { onSuccess() },
                 onFailure = { err ->
-                    _errorMessage.value = err.message ?: "Google Sign-In failed"
+                    _uiState.update { it.copy(errorMessage = err.message ?: "Google Sign-In failed") }
                 },
             )
         }

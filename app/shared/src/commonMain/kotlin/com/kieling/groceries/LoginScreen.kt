@@ -16,11 +16,7 @@ fun LoginScreen(
     authViewModel: AuthViewModel = koinViewModel(),
     onSignInClick: () -> Unit,
 ) {
-    val email by authViewModel.email.collectAsStateWithLifecycle()
-    val password by authViewModel.password.collectAsStateWithLifecycle()
-    val isRegistering by authViewModel.isRegistering.collectAsStateWithLifecycle()
-    val errorMessage by authViewModel.errorMessage.collectAsStateWithLifecycle()
-    val isLoading by authViewModel.isLoading.collectAsStateWithLifecycle()
+    val uiState by authViewModel.uiState.collectAsStateWithLifecycle()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -41,14 +37,14 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = if (isRegistering) "Create a new account" else "Sign in to continue",
+                text = if (uiState.isRegistering) "Create a new account" else "Sign in to continue",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(modifier = Modifier.height(24.dp))
 
             OutlinedTextField(
-                value = email,
+                value = uiState.email,
                 onValueChange = { authViewModel.updateEmail(it) },
                 label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth(),
@@ -56,7 +52,7 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
-                value = password,
+                value = uiState.password,
                 onValueChange = { authViewModel.updatePassword(it) },
                 label = { Text("Password") },
                 visualTransformation = PasswordVisualTransformation(),
@@ -64,10 +60,10 @@ fun LoginScreen(
                 singleLine = true,
             )
 
-            if (errorMessage != null) {
+            if (uiState.errorMessage != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = errorMessage ?: "",
+                    text = uiState.errorMessage ?: "",
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
                 )
@@ -81,9 +77,9 @@ fun LoginScreen(
                     Modifier
                         .fillMaxWidth()
                         .height(50.dp),
-                enabled = !isLoading,
+                enabled = !uiState.isLoading,
             ) {
-                Text(if (isRegistering) "Register" else "Sign In with Email", style = MaterialTheme.typography.bodyLarge)
+                Text(if (uiState.isRegistering) "Register" else "Sign In with Email", style = MaterialTheme.typography.bodyLarge)
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -95,7 +91,7 @@ fun LoginScreen(
                         .fillMaxWidth()
                         .height(50.dp),
             ) {
-                Text(if (isRegistering) "Already have an account? Sign In" else "Create Account", style = MaterialTheme.typography.bodyLarge)
+                Text(if (uiState.isRegistering) "Already have an account? Sign In" else "Create Account", style = MaterialTheme.typography.bodyLarge)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -109,7 +105,7 @@ fun LoginScreen(
                         .fillMaxWidth()
                         .height(50.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                enabled = !isLoading,
+                enabled = !uiState.isLoading,
             ) {
                 Text("Sign in with Google", style = MaterialTheme.typography.bodyLarge)
             }
