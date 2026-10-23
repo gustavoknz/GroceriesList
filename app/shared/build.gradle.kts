@@ -52,6 +52,7 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.compose.uiTooling)
             implementation(libs.firebaseAuth)
+            implementation(libs.koin.android)
             implementation(libs.androidxCredentials)
             implementation(libs.androidxCredentialsPlayServicesAuth)
             implementation(libs.googleIdentity)

@@ -1,10 +1,8 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
-    kotlin("android")
     id("com.google.gms.google-services")
 }
 
@@ -15,17 +13,14 @@ val localProperties =
             file.inputStream().use { load(it) }
         }
     }
-val googleClientId = localProperties.getProperty("GOOGLE_CLIENT_ID", "1017859145345-o8rpj32j3dr6sun4s7vm656jvq8q61ne.apps.googleusercontent.com")
+val googleClientId: String? = localProperties.getProperty("GOOGLE_CLIENT_ID", "1017859145345-o8rpj32j3dr6sun4s7vm656jvq8q61ne.apps.googleusercontent.com")
 
-kotlin {
-    compilerOptions {
-        jvmTarget = JvmTarget.JVM_11
-    }
-}
 dependencies {
     implementation(project(":app:shared"))
 
     implementation(libs.androidx.activity.compose)
+    implementation(libs.koin.core)
+    implementation(libs.koin.android)
 
     // Import the Firebase BoM
     implementation(platform(libs.firebaseBom))
@@ -36,7 +31,7 @@ dependencies {
     debugImplementation(libs.compose.uiTooling)
 }
 
-android {
+extensions.configure<com.android.build.api.dsl.ApplicationExtension> {
     namespace = "com.kieling.groceries"
     compileSdk =
         libs.versions.android.compileSdk
@@ -55,7 +50,7 @@ android {
                 .toInt()
         versionCode = 1
         versionName = "1.0"
-        resValue("string", "google_client_id", googleClientId)
+        resValue("string", "google_client_id", googleClientId ?: "")
     }
     packaging {
         resources {
