@@ -8,25 +8,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kieling.groceries.data.repository.AuthRepositoryImpl
-import com.kieling.groceries.domain.usecase.ObserveCurrentUserUseCase
-import com.kieling.groceries.domain.usecase.SignInWithEmailUseCase
-import com.kieling.groceries.domain.usecase.SignInWithGoogleUseCase
-import com.kieling.groceries.domain.usecase.SignUpWithEmailUseCase
 import com.kieling.groceries.presentation.auth.AuthViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun LoginScreen(
-    authViewModel: AuthViewModel =
-        remember {
-            val authRepo = AuthRepositoryImpl()
-            AuthViewModel(
-                signInWithEmailUseCase = SignInWithEmailUseCase(authRepo),
-                signUpWithEmailUseCase = SignUpWithEmailUseCase(authRepo),
-                signInWithGoogleUseCase = SignInWithGoogleUseCase(authRepo),
-                observeCurrentUserUseCase = ObserveCurrentUserUseCase(authRepo),
-            )
-        },
+    authViewModel: AuthViewModel = koinViewModel(),
     onSignInClick: () -> Unit,
 ) {
     val email by authViewModel.email.collectAsStateWithLifecycle()

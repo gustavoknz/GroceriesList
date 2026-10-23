@@ -3,6 +3,7 @@ package com.kieling.groceries.presentation.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kieling.groceries.AuthUser
+import com.kieling.groceries.data.repository.AuthRepositoryImpl
 import com.kieling.groceries.domain.usecase.ObserveCurrentUserUseCase
 import com.kieling.groceries.domain.usecase.SignInWithEmailUseCase
 import com.kieling.groceries.domain.usecase.SignInWithGoogleUseCase
@@ -13,10 +14,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class AuthViewModel(
-    private val signInWithEmailUseCase: SignInWithEmailUseCase,
-    private val signUpWithEmailUseCase: SignUpWithEmailUseCase,
-    private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
-    observeCurrentUserUseCase: ObserveCurrentUserUseCase,
+    private val signInWithEmailUseCase: SignInWithEmailUseCase = SignInWithEmailUseCase(AuthRepositoryImpl()),
+    private val signUpWithEmailUseCase: SignUpWithEmailUseCase = SignUpWithEmailUseCase(AuthRepositoryImpl()),
+    private val signInWithGoogleUseCase: SignInWithGoogleUseCase = SignInWithGoogleUseCase(AuthRepositoryImpl()),
+    observeCurrentUserUseCase: ObserveCurrentUserUseCase = ObserveCurrentUserUseCase(AuthRepositoryImpl()),
 ) : ViewModel() {
     val currentUser: StateFlow<AuthUser?> = observeCurrentUserUseCase()
 

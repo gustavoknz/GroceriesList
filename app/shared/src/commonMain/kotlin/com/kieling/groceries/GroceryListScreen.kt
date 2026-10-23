@@ -11,39 +11,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kieling.groceries.data.repository.AuthRepositoryImpl
-import com.kieling.groceries.data.repository.GroceryRepositoryImpl
-import com.kieling.groceries.domain.usecase.*
 import com.kieling.groceries.presentation.auth.AuthViewModel
 import com.kieling.groceries.presentation.grocery.GroceryListViewModel
 import kotlinx.coroutines.launch
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun GroceryListScreen(
-    groceryViewModel: GroceryListViewModel =
-        remember {
-            val authRepo = AuthRepositoryImpl()
-            val groceryRepo = GroceryRepositoryImpl()
-            GroceryListViewModel(
-                observeCurrentUserUseCase = ObserveCurrentUserUseCase(authRepo),
-                getGroceryItemsUseCase = GetGroceryItemsUseCase(groceryRepo),
-                addGroceryItemUseCase = AddGroceryItemUseCase(groceryRepo),
-                toggleGroceryItemUseCase = ToggleGroceryItemUseCase(groceryRepo),
-                deleteGroceryItemUseCase = DeleteGroceryItemUseCase(groceryRepo),
-                signOutUseCase = SignOutUseCase(authRepo),
-                signInWithGoogleUseCase = SignInWithGoogleUseCase(authRepo),
-            )
-        },
-    authViewModel: AuthViewModel =
-        remember {
-            val authRepo = AuthRepositoryImpl()
-            AuthViewModel(
-                signInWithEmailUseCase = SignInWithEmailUseCase(authRepo),
-                signUpWithEmailUseCase = SignUpWithEmailUseCase(authRepo),
-                signInWithGoogleUseCase = SignInWithGoogleUseCase(authRepo),
-                observeCurrentUserUseCase = ObserveCurrentUserUseCase(authRepo),
-            )
-        },
+    groceryViewModel: GroceryListViewModel = koinViewModel(),
+    authViewModel: AuthViewModel = koinViewModel(),
 ) {
     val currentUser by groceryViewModel.currentUser.collectAsStateWithLifecycle()
     val items by groceryViewModel.items.collectAsStateWithLifecycle()
