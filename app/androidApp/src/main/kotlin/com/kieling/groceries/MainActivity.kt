@@ -8,6 +8,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.google.firebase.FirebaseApp
+import com.kieling.groceries.data.AndroidContextHolder
+import com.kieling.groceries.data.CurrentActivityHolder
+import com.kieling.groceries.di.appModule
+import org.koin.compose.KoinApplication
+import org.koin.dsl.koinConfiguration
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,7 +37,8 @@ class MainActivity : ComponentActivity() {
                     override fun onActivityCreated(
                         activity: android.app.Activity,
                         savedInstanceState: Bundle?,
-                    ) {}
+                    ) {
+                    }
 
                     override fun onActivityStarted(activity: android.app.Activity) {}
 
@@ -41,7 +47,8 @@ class MainActivity : ComponentActivity() {
                     override fun onActivitySaveInstanceState(
                         activity: android.app.Activity,
                         outState: Bundle,
-                    ) {}
+                    ) {
+                    }
 
                     override fun onActivityDestroyed(activity: android.app.Activity) {}
                 },
@@ -60,5 +67,12 @@ class MainActivity : ComponentActivity() {
 @Preview
 @Composable
 fun AppAndroidPreview() {
-    App()
+    KoinApplication(
+        configuration =
+            koinConfiguration {
+                modules(appModule)
+            },
+    ) {
+        App()
+    }
 }
