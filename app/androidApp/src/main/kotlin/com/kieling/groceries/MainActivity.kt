@@ -1,5 +1,6 @@
 package com.kieling.groceries
 
+import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -22,35 +23,35 @@ class MainActivity : ComponentActivity() {
         try {
             FirebaseApp.initializeApp(this)
             AndroidContextHolder.applicationContext = applicationContext
-            (application as? Application)?.registerActivityLifecycleCallbacks(
+            application?.registerActivityLifecycleCallbacks(
                 object : Application.ActivityLifecycleCallbacks {
-                    override fun onActivityResumed(activity: android.app.Activity) {
+                    override fun onActivityResumed(activity: Activity) {
                         CurrentActivityHolder.currentActivity = activity
                     }
 
-                    override fun onActivityPaused(activity: android.app.Activity) {
+                    override fun onActivityPaused(activity: Activity) {
                         if (CurrentActivityHolder.currentActivity == activity) {
                             CurrentActivityHolder.currentActivity = null
                         }
                     }
 
                     override fun onActivityCreated(
-                        activity: android.app.Activity,
+                        activity: Activity,
                         savedInstanceState: Bundle?,
                     ) {
                     }
 
-                    override fun onActivityStarted(activity: android.app.Activity) {}
+                    override fun onActivityStarted(activity: Activity) {}
 
-                    override fun onActivityStopped(activity: android.app.Activity) {}
+                    override fun onActivityStopped(activity: Activity) {}
 
                     override fun onActivitySaveInstanceState(
-                        activity: android.app.Activity,
+                        activity: Activity,
                         outState: Bundle,
                     ) {
                     }
 
-                    override fun onActivityDestroyed(activity: android.app.Activity) {}
+                    override fun onActivityDestroyed(activity: Activity) {}
                 },
             )
             CurrentActivityHolder.currentActivity = this
