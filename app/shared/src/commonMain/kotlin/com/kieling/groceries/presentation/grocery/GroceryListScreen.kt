@@ -1,4 +1,4 @@
-package com.kieling.groceries
+package com.kieling.groceries.presentation.grocery
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,7 +12,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kieling.groceries.presentation.auth.AuthViewModel
-import com.kieling.groceries.presentation.grocery.GroceryListViewModel
+import com.kieling.groceries.presentation.auth.LoginScreen
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 

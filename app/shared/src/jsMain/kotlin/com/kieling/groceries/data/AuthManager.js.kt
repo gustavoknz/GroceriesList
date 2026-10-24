@@ -1,5 +1,6 @@
-package com.kieling.groceries
+package com.kieling.groceries.data
 
+import com.kieling.groceries.model.AuthUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

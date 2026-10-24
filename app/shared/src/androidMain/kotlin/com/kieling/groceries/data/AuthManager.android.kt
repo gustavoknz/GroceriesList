@@ -1,4 +1,4 @@
-package com.kieling.groceries
+package com.kieling.groceries.data
 
 import android.app.Activity
 import android.content.Context
@@ -9,6 +9,8 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.kieling.groceries.Logger
+import com.kieling.groceries.model.AuthUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

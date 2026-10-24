@@ -1,8 +1,8 @@
 package com.kieling.groceries.data.repository
 
-import com.kieling.groceries.AuthManager
-import com.kieling.groceries.AuthUser
+import com.kieling.groceries.data.AuthManager
 import com.kieling.groceries.domain.repository.AuthRepository
+import com.kieling.groceries.model.AuthUser
 import kotlinx.coroutines.flow.StateFlow
 
 class AuthRepositoryImpl(

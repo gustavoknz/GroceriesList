@@ -1,8 +1,8 @@
 package com.kieling.groceries.presentation.grocery
 
 import androidx.compose.runtime.Immutable
-import com.kieling.groceries.AuthUser
-import com.kieling.groceries.GroceryItem
+import com.kieling.groceries.model.AuthUser
+import com.kieling.groceries.model.GroceryItem
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 

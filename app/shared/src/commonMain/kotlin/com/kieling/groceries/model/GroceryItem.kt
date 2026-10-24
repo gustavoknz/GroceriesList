@@ -1,4 +1,4 @@
-package com.kieling.groceries
+package com.kieling.groceries.model
 
 import androidx.compose.runtime.Immutable
 

@@ -1,4 +1,4 @@
-package com.kieling.groceries
+package com.kieling.groceries.presentation.auth
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -8,7 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kieling.groceries.presentation.auth.AuthViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable

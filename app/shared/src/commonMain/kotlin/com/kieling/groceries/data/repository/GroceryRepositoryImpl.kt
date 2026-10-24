@@ -1,7 +1,7 @@
 package com.kieling.groceries.data.repository
 
-import com.kieling.groceries.GroceryItem
 import com.kieling.groceries.domain.repository.GroceryRepository
+import com.kieling.groceries.model.GroceryItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
