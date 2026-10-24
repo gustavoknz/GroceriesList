@@ -11,7 +11,6 @@ import com.kieling.groceries.domain.usecase.SignOutUseCase
 import com.kieling.groceries.domain.usecase.ToggleGroceryItemUseCase
 import com.kieling.groceries.presentation.grocery.GroceryListViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -24,7 +23,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class GroceryListViewModelTest {
     private val testDispatcher = UnconfinedTestDispatcher()
     private val groceryRepo = GroceryRepositoryImpl()

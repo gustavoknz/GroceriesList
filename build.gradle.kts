@@ -13,7 +13,16 @@ plugins {
 }
 
 subprojects {
-    apply(plugin = "org.jlleitschuh.gradle.ktlint")
+    pluginManager.apply("org.jlleitschuh.gradle.ktlint")
+
+    plugins.withId("org.jetbrains.kotlin.multiplatform") {
+        extensions.configure<org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension> {
+            sourceSets.all {
+                languageSettings.optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
+                languageSettings.optIn("androidx.compose.ui.ExperimentalComposeUiApi")
+            }
+        }
+    }
 
     configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
         android.set(true)
