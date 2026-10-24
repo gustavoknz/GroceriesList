@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinxSerialization)
 }
 
 kotlin {
@@ -57,6 +58,7 @@ kotlin {
             implementation(libs.androidxCredentialsPlayServicesAuth)
             implementation(libs.googleIdentity)
             implementation(libs.kotlinxCoroutinesPlayServices)
+            implementation(libs.ktor.client.cio)
         }
         commonMain.dependencies {
             api(project(":core"))
@@ -72,6 +74,10 @@ kotlin {
             api(libs.koin.compose)
             api(libs.koin.compose.viewmodel)
             implementation(libs.kotlinxCollectionsImmutable)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

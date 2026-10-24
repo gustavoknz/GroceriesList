@@ -2,40 +2,99 @@ package com.kieling.groceries.data.repository
 
 import com.kieling.groceries.domain.repository.GroceryRepository
 import com.kieling.groceries.model.GroceryItem
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.delete
+import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class AddItemRequest(
+    val name: String,
+)
 
 class GroceryRepositoryImpl : GroceryRepository {
-    private val _items =
-        MutableStateFlow(
-            listOf(
-                GroceryItem(1, "Apples"),
-                GroceryItem(2, "Milk"),
-                GroceryItem(3, "Bread"),
-                GroceryItem(4, "Eggs"),
-                GroceryItem(5, "Cheese"),
-                GroceryItem(6, "Coffee"),
-            ),
-        )
+    private val client =
+        HttpClient {
+            install(ContentNegotiation) {
+                json()
+            }
+        }
+
+    private val baseUrl = "http://localhost:8080"
+
+    private val _items = MutableStateFlow<List<GroceryItem>>(emptyList())
     override val items: StateFlow<List<GroceryItem>> = _items.asStateFlow()
 
-    override suspend fun getItems(): List<GroceryItem> = _items.value
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    init {
+        refreshItems()
+    }
+
+    private fun refreshItems() {
+        scope.launch {
+            try {
+                val fetched = client.get("$baseUrl/items").body<List<GroceryItem>>()
+                _items.value = fetched
+            } catch (e: Exception) {
+                // Fallback or log if server is not reachable
+            }
+        }
+    }
+
+    override suspend fun getItems(): List<GroceryItem> {
+        try {
+            val fetched = client.get("$baseUrl/items").body<List<GroceryItem>>()
+            _items.value = fetched
+            return fetched
+        } catch (e: Exception) {
+            return _items.value
+        }
+    }
 
     override suspend fun addItem(name: String) {
-        val currentList = _items.value
-        val newId = (currentList.maxOfOrNull { it.id } ?: 0) + 1
-        _items.value = currentList + GroceryItem(id = newId, name = name.trim())
+        try {
+            val updated =
+                client
+                    .post("$baseUrl/items") {
+                        contentType(ContentType.Application.Json)
+                        setBody(AddItemRequest(name))
+                    }.body<List<GroceryItem>>()
+            _items.value = updated
+        } catch (e: Exception) {
+            // handle error
+        }
     }
 
     override suspend fun toggleItem(id: Int) {
-        _items.value =
-            _items.value.map { item ->
-                if (item.id == id) item.copy(isChecked = !item.isChecked) else item
-            }
+        try {
+            val updated = client.post("$baseUrl/items/$id/toggle").body<List<GroceryItem>>()
+            _items.value = updated
+        } catch (e: Exception) {
+            // handle error
+        }
     }
 
     override suspend fun deleteItem(id: Int) {
-        _items.value = _items.value.filter { it.id != id }
+        try {
+            val updated = client.delete("$baseUrl/items/$id").body<List<GroceryItem>>()
+            _items.value = updated
+        } catch (e: Exception) {
+            // handle error
+        }
     }
 }
