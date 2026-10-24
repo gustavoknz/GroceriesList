@@ -71,6 +71,7 @@ kotlin {
             api(libs.koin.core)
             api(libs.koin.compose)
             api(libs.koin.compose.viewmodel)
+            implementation(libs.kotlinxCollectionsImmutable)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

@@ -2,21 +2,14 @@ package com.kieling.groceries.presentation.grocery
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kieling.groceries.AuthUser
-import com.kieling.groceries.GroceryItem
 import com.kieling.groceries.domain.usecase.*
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-
-data class GroceryListUiState(
-    val currentUser: AuthUser? = null,
-    val items: List<GroceryItem> = emptyList(),
-    val newItemName: String = "",
-)
 
 class GroceryListViewModel(
     observeCurrentUserUseCase: ObserveCurrentUserUseCase,
@@ -37,7 +30,7 @@ class GroceryListViewModel(
         ) { user, items, newItemName ->
             GroceryListUiState(
                 currentUser = user,
-                items = items,
+                items = items.toImmutableList(),
                 newItemName = newItemName,
             )
         }.stateIn(

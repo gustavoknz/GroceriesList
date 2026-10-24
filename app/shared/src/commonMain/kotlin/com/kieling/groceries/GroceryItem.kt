@@ -1,5 +1,8 @@
 package com.kieling.groceries
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class GroceryItem(
     val id: Int,
     val name: String,
