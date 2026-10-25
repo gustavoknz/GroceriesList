@@ -10,11 +10,13 @@ plugins {
     alias(libs.plugins.ktor) apply false
     alias(libs.plugins.ktlint) apply false
     alias(libs.plugins.kotlinxSerialization) apply false
+    alias(libs.plugins.kover) apply false
     id("com.google.gms.google-services") version "4.5.0" apply false
 }
 
 subprojects {
     pluginManager.apply("org.jlleitschuh.gradle.ktlint")
+    pluginManager.apply("org.jetbrains.kotlinx.kover")
 
     plugins.withId("org.jetbrains.kotlin.multiplatform") {
         extensions.configure<org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension> {

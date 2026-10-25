@@ -20,6 +20,7 @@ firebaseBom = "35.1.0"
 ktlint = "14.2.0"
 koin = "4.2.2"
 kotlinxCollectionsImmutable = "0.5.2"
+kover = "0.9.11"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -74,3 +75,4 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
