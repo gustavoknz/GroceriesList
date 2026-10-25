@@ -25,6 +25,12 @@ subprojects {
         }
     }
 
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
+        compilerOptions {
+            freeCompilerArgs.add("-Xexpect-actual-classes")
+        }
+    }
+
     configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
         android.set(true)
         ignoreFailures.set(false)
