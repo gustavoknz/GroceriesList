@@ -1,19 +1,19 @@
 package com.kieling.groceries.data.repository
 
+import com.kieling.groceries.Logger
 import com.kieling.groceries.data.model.GroceryItemDto
 import com.kieling.groceries.data.model.toDomain
 import com.kieling.groceries.domain.model.GroceryItem
 import com.kieling.groceries.domain.repository.GroceryRepository
+import com.kieling.groceries.getApiBaseUrl
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -28,15 +28,11 @@ data class AddItemRequest(
     val name: String,
 )
 
-class GroceryRepositoryImpl : GroceryRepository {
-    private val client =
-        HttpClient {
-            install(ContentNegotiation) {
-                json()
-            }
-        }
-
-    private val baseUrl = "http://localhost:8080"
+class GroceryRepositoryImpl(
+    private val client: HttpClient,
+) : GroceryRepository {
+    private val tag = "GroceryRepositoryImpl"
+    private val baseUrl = getApiBaseUrl()
 
     private val _items = MutableStateFlow<List<GroceryItem>>(emptyList())
     override val items: StateFlow<List<GroceryItem>> = _items.asStateFlow()
@@ -50,20 +46,29 @@ class GroceryRepositoryImpl : GroceryRepository {
     private fun refreshItems() {
         scope.launch {
             try {
-                val fetched = client.get("$baseUrl/items").body<List<GroceryItemDto>>().map { it.toDomain() }
+                val fetched =
+                    client
+                        .get("$baseUrl/items")
+                        .body<List<GroceryItemDto>>()
+                        .map { it.toDomain() }
                 _items.value = fetched
             } catch (e: Exception) {
-                // Fallback or log if server is not reachable
+                Logger.e(tag, "Error refreshing items", e)
             }
         }
     }
 
     override suspend fun getItems(): List<GroceryItem> {
         try {
-            val fetched = client.get("$baseUrl/items").body<List<GroceryItemDto>>().map { it.toDomain() }
+            val fetched =
+                client
+                    .get("$baseUrl/items")
+                    .body<List<GroceryItemDto>>()
+                    .map { it.toDomain() }
             _items.value = fetched
             return fetched
         } catch (e: Exception) {
+            Logger.e(tag, "Error getting items", e)
             return _items.value
         }
     }
@@ -79,7 +84,7 @@ class GroceryRepositoryImpl : GroceryRepository {
                     .map { it.toDomain() }
             _items.value = updated
         } catch (e: Exception) {
-            // handle error
+            Logger.e(tag, "Error adding item: $name", e)
         }
     }
 
@@ -92,7 +97,7 @@ class GroceryRepositoryImpl : GroceryRepository {
                     .map { it.toDomain() }
             _items.value = updated
         } catch (e: Exception) {
-            // handle error
+            Logger.e(tag, "Error toggling item: $id", e)
         }
     }
 
@@ -105,7 +110,7 @@ class GroceryRepositoryImpl : GroceryRepository {
                     .map { it.toDomain() }
             _items.value = updated
         } catch (e: Exception) {
-            // handle error
+            Logger.e(tag, "Error deleting item: $id", e)
         }
     }
 }

@@ -15,13 +15,23 @@ import com.kieling.groceries.domain.usecase.SignUpWithEmailUseCase
 import com.kieling.groceries.domain.usecase.ToggleGroceryItemUseCase
 import com.kieling.groceries.presentation.auth.AuthViewModel
 import com.kieling.groceries.presentation.grocery.GroceryListViewModel
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.serialization.kotlinx.json.json
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val appModule =
     module {
+        single {
+            HttpClient {
+                install(ContentNegotiation) {
+                    json()
+                }
+            }
+        }
         single<AuthRepository> { AuthRepositoryImpl() }
-        single<GroceryRepository> { GroceryRepositoryImpl() }
+        single<GroceryRepository> { GroceryRepositoryImpl(get()) }
 
         factory { ObserveCurrentUserUseCase(get()) }
         factory { SignInWithGoogleUseCase(get()) }
