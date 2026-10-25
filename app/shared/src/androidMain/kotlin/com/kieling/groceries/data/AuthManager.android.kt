@@ -15,13 +15,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
+import java.lang.ref.WeakReference
 
 object AndroidContextHolder {
     var applicationContext: Context? = null
 }
 
 object CurrentActivityHolder {
-    var currentActivity: Activity? = null
+    private var activityRef: WeakReference<Activity>? = null
+
+    var currentActivity: Activity?
+        get() = activityRef?.get()
+        set(value) {
+            activityRef = if (value != null) WeakReference(value) else null
+        }
 }
 
 actual class AuthManager actual constructor() {
@@ -30,18 +37,18 @@ actual class AuthManager actual constructor() {
     private val firebaseAuth: FirebaseAuth? by lazy {
         try {
             FirebaseAuth.getInstance()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
 
     private val _currentUser =
-        MutableStateFlow<AuthUser?>(
+        MutableStateFlow(
             try {
                 firebaseAuth?.currentUser?.let {
                     AuthUser(it.uid, it.email, it.displayName, it.photoUrl?.toString())
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 null
             },
         )
