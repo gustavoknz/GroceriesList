@@ -1,6 +1,7 @@
 package com.kieling.groceries
 
 import com.kieling.groceries.data.repository.AuthRepositoryImpl
+import com.kieling.groceries.domain.model.GroceryItem
 import com.kieling.groceries.domain.repository.GroceryRepository
 import com.kieling.groceries.domain.usecase.AddGroceryItemUseCase
 import com.kieling.groceries.domain.usecase.DeleteGroceryItemUseCase
@@ -9,7 +10,6 @@ import com.kieling.groceries.domain.usecase.ObserveCurrentUserUseCase
 import com.kieling.groceries.domain.usecase.SignInWithGoogleUseCase
 import com.kieling.groceries.domain.usecase.SignOutUseCase
 import com.kieling.groceries.domain.usecase.ToggleGroceryItemUseCase
-import com.kieling.groceries.model.GroceryItem
 import com.kieling.groceries.presentation.grocery.GroceryListViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

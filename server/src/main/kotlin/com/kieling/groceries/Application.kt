@@ -1,6 +1,6 @@
 package com.kieling.groceries
 
-import com.kieling.groceries.model.GroceryItem
+import com.kieling.groceries.domain.model.GroceryItem
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install

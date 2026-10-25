@@ -1,6 +1,6 @@
 package com.kieling.groceries.domain.repository
 
-import com.kieling.groceries.model.AuthUser
+import com.kieling.groceries.domain.model.AuthUser
 import kotlinx.coroutines.flow.StateFlow
 
 interface AuthRepository {

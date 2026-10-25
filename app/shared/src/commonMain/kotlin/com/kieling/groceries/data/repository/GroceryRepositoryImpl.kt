@@ -1,7 +1,9 @@
 package com.kieling.groceries.data.repository
 
+import com.kieling.groceries.data.model.GroceryItemDto
+import com.kieling.groceries.data.model.toDomain
+import com.kieling.groceries.domain.model.GroceryItem
 import com.kieling.groceries.domain.repository.GroceryRepository
-import com.kieling.groceries.model.GroceryItem
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -48,7 +50,7 @@ class GroceryRepositoryImpl : GroceryRepository {
     private fun refreshItems() {
         scope.launch {
             try {
-                val fetched = client.get("$baseUrl/items").body<List<GroceryItem>>()
+                val fetched = client.get("$baseUrl/items").body<List<GroceryItemDto>>().map { it.toDomain() }
                 _items.value = fetched
             } catch (e: Exception) {
                 // Fallback or log if server is not reachable
@@ -58,7 +60,7 @@ class GroceryRepositoryImpl : GroceryRepository {
 
     override suspend fun getItems(): List<GroceryItem> {
         try {
-            val fetched = client.get("$baseUrl/items").body<List<GroceryItem>>()
+            val fetched = client.get("$baseUrl/items").body<List<GroceryItemDto>>().map { it.toDomain() }
             _items.value = fetched
             return fetched
         } catch (e: Exception) {
@@ -73,7 +75,8 @@ class GroceryRepositoryImpl : GroceryRepository {
                     .post("$baseUrl/items") {
                         contentType(ContentType.Application.Json)
                         setBody(AddItemRequest(name))
-                    }.body<List<GroceryItem>>()
+                    }.body<List<GroceryItemDto>>()
+                    .map { it.toDomain() }
             _items.value = updated
         } catch (e: Exception) {
             // handle error
@@ -82,7 +85,11 @@ class GroceryRepositoryImpl : GroceryRepository {
 
     override suspend fun toggleItem(id: Int) {
         try {
-            val updated = client.post("$baseUrl/items/$id/toggle").body<List<GroceryItem>>()
+            val updated =
+                client
+                    .post("$baseUrl/items/$id/toggle")
+                    .body<List<GroceryItemDto>>()
+                    .map { it.toDomain() }
             _items.value = updated
         } catch (e: Exception) {
             // handle error
@@ -91,7 +98,11 @@ class GroceryRepositoryImpl : GroceryRepository {
 
     override suspend fun deleteItem(id: Int) {
         try {
-            val updated = client.delete("$baseUrl/items/$id").body<List<GroceryItem>>()
+            val updated =
+                client
+                    .delete("$baseUrl/items/$id")
+                    .body<List<GroceryItemDto>>()
+                    .map { it.toDomain() }
             _items.value = updated
         } catch (e: Exception) {
             // handle error

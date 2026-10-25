@@ -2,11 +2,11 @@ package com.kieling.groceries.presentation.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kieling.groceries.domain.model.AuthUser
 import com.kieling.groceries.domain.usecase.ObserveCurrentUserUseCase
 import com.kieling.groceries.domain.usecase.SignInWithEmailUseCase
 import com.kieling.groceries.domain.usecase.SignInWithGoogleUseCase
 import com.kieling.groceries.domain.usecase.SignUpWithEmailUseCase
-import com.kieling.groceries.model.AuthUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

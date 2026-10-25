@@ -2,6 +2,8 @@ package com.kieling.groceries.presentation.grocery
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kieling.groceries.domain.model.AuthUser
+import com.kieling.groceries.domain.model.GroceryItem
 import com.kieling.groceries.domain.usecase.AddGroceryItemUseCase
 import com.kieling.groceries.domain.usecase.DeleteGroceryItemUseCase
 import com.kieling.groceries.domain.usecase.GetGroceryItemsUseCase
@@ -9,6 +11,7 @@ import com.kieling.groceries.domain.usecase.ObserveCurrentUserUseCase
 import com.kieling.groceries.domain.usecase.SignInWithGoogleUseCase
 import com.kieling.groceries.domain.usecase.SignOutUseCase
 import com.kieling.groceries.domain.usecase.ToggleGroceryItemUseCase
+import com.kieling.groceries.presentation.model.toUi
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -33,10 +36,10 @@ class GroceryListViewModel(
             observeCurrentUserUseCase(),
             getGroceryItemsUseCase(),
             newItemNameFlow,
-        ) { user, items, newItemName ->
+        ) { user: AuthUser?, items: List<GroceryItem>, newItemName: String ->
             GroceryListUiState(
-                currentUser = user,
-                items = items.toImmutableList(),
+                currentUser = user?.toUi(),
+                items = items.map { it.toUi() }.toImmutableList(),
                 newItemName = newItemName,
             )
         }.stateIn(

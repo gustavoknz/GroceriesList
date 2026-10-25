@@ -1,0 +1,8 @@
+package com.kieling.groceries.domain.model
+
+data class AuthUser(
+    val uid: String,
+    val email: String?,
+    val displayName: String?,
+    val photoUrl: String?,
+)

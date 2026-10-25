@@ -1,7 +1,7 @@
 package com.kieling.groceries
 
-import com.kieling.groceries.model.AuthUser
-import com.kieling.groceries.model.GroceryItem
+import com.kieling.groceries.domain.model.AuthUser
+import com.kieling.groceries.domain.model.GroceryItem
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
