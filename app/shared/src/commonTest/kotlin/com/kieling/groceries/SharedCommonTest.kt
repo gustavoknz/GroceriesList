@@ -1,12 +1,17 @@
 package com.kieling.groceries
 
+import com.kieling.groceries.data.model.AuthUserDto
+import com.kieling.groceries.data.model.GroceryItemDto
+import com.kieling.groceries.data.model.toDto
 import com.kieling.groceries.domain.model.AuthUser
 import com.kieling.groceries.domain.model.GroceryItem
+import com.kieling.groceries.presentation.model.toUi
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import com.kieling.groceries.data.model.toDomain as dtoToDomain
 
 class SharedCommonTest {
     @Test
@@ -50,5 +55,41 @@ class SharedCommonTest {
         assertNull(user.email)
         assertNull(user.displayName)
         assertNull(user.photoUrl)
+    }
+
+    @Test
+    fun testGroceryItemMappers() {
+        val dto = GroceryItemDto(1, "Apples", true)
+        val domain = dto.dtoToDomain()
+        assertEquals(dto.id, domain.id)
+        assertEquals(dto.name, domain.name)
+        assertEquals(dto.isChecked, domain.isChecked)
+
+        val backToDto = domain.toDto()
+        assertEquals(dto, backToDto)
+
+        val ui = domain.toUi()
+        assertEquals(domain.id, ui.id)
+        assertEquals(domain.name, ui.name)
+        assertEquals(domain.isChecked, ui.isChecked)
+    }
+
+    @Test
+    fun testAuthUserMappers() {
+        val dto = AuthUserDto("123", "a@b.com", "Name", "url")
+        val domain = dto.dtoToDomain()
+        assertEquals(dto.uid, domain.uid)
+        assertEquals(dto.email, domain.email)
+        assertEquals(dto.displayName, domain.displayName)
+        assertEquals(dto.photoUrl, domain.photoUrl)
+
+        val backToDto = domain.toDto()
+        assertEquals(dto, backToDto)
+
+        val ui = domain.toUi()
+        assertEquals(domain.uid, ui.uid)
+        assertEquals(domain.email, ui.email)
+        assertEquals(domain.displayName, ui.displayName)
+        assertEquals(domain.photoUrl, ui.photoUrl)
     }
 }
