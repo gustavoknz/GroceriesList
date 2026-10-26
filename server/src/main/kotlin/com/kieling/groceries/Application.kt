@@ -15,6 +15,8 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import java.io.File
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
@@ -26,15 +28,42 @@ data class AddItemRequest(
     val name: String,
 )
 
-private val itemsList =
-    mutableListOf(
-        GroceryItem(1, "Apples"),
-        GroceryItem(2, "Milk"),
-        GroceryItem(3, "Bread"),
-        GroceryItem(4, "Eggs"),
-        GroceryItem(5, "Cheese"),
-        GroceryItem(6, "Coffee"),
-    )
+private val json = Json { prettyPrint = true }
+private val dataFile = File("items.json")
+
+private val itemsList: MutableList<GroceryItem> =
+    run {
+        if (dataFile.exists()) {
+            try {
+                json.decodeFromString<List<GroceryItem>>(dataFile.readText()).toMutableList()
+            } catch (_: Exception) {
+                mutableListOf(
+                    GroceryItem(1, "Apples"),
+                    GroceryItem(2, "Milk"),
+                    GroceryItem(3, "Bread"),
+                    GroceryItem(4, "Eggs"),
+                    GroceryItem(5, "Cheese"),
+                    GroceryItem(6, "Coffee"),
+                )
+            }
+        } else {
+            mutableListOf(
+                GroceryItem(1, "Apples"),
+                GroceryItem(2, "Milk"),
+                GroceryItem(3, "Bread"),
+                GroceryItem(4, "Eggs"),
+                GroceryItem(5, "Cheese"),
+                GroceryItem(6, "Coffee"),
+            ).also { saveItems(it) }
+        }
+    }
+
+private fun saveItems(items: List<GroceryItem>) {
+    try {
+        dataFile.writeText(json.encodeToString(items))
+    } catch (_: Exception) {
+    }
+}
 
 fun Application.module() {
     install(ContentNegotiation) {
@@ -52,6 +81,7 @@ fun Application.module() {
             val newId = (itemsList.maxOfOrNull { it.id } ?: 0) + 1
             val newItem = GroceryItem(id = newId, name = request.name.trim())
             itemsList.add(newItem)
+            saveItems(itemsList)
             call.respond(itemsList.toList())
         }
         post("/items/{id}/toggle") {
@@ -61,6 +91,7 @@ fun Application.module() {
                 if (index != -1) {
                     val item = itemsList[index]
                     itemsList[index] = item.copy(isChecked = !item.isChecked)
+                    saveItems(itemsList)
                 }
             }
             call.respond(itemsList.toList())
@@ -68,7 +99,10 @@ fun Application.module() {
         delete("/items/{id}") {
             val id = call.parameters["id"]?.toIntOrNull()
             if (id != null) {
-                itemsList.removeIf { it.id == id }
+                val removed = itemsList.removeIf { it.id == id }
+                if (removed) {
+                    saveItems(itemsList)
+                }
             }
             call.respond(itemsList.toList())
         }

@@ -2,6 +2,7 @@ package com.kieling.groceries.presentation.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kieling.groceries.Logger
 import com.kieling.groceries.domain.model.AuthUser
 import com.kieling.groceries.domain.usecase.ObserveCurrentUserUseCase
 import com.kieling.groceries.domain.usecase.SignInWithEmailUseCase
@@ -67,14 +68,19 @@ class AuthViewModel(
     }
 
     fun signInWithGoogle(onSuccess: () -> Unit = {}) {
+        Logger.i("AuthViewModel", "signInWithGoogle invoked")
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
         viewModelScope.launch {
             val result = signInWithGoogleUseCase()
             _uiState.update { it.copy(isLoading = false) }
             result.fold(
-                onSuccess = { onSuccess() },
+                onSuccess = { user ->
+                    Logger.i("AuthViewModel", "signInWithGoogle success: ${user.email}")
+                    onSuccess()
+                },
                 onFailure = { err ->
+                    Logger.e("AuthViewModel", "signInWithGoogle failure", err)
                     _uiState.update { it.copy(errorMessage = err.message ?: "Google Sign-In failed") }
                 },
             )

@@ -7,21 +7,33 @@ actual object Logger {
         tag: String,
         message: String,
     ) {
-        Log.d(tag, message)
+        try {
+            Log.d(tag, message)
+        } catch (_: Exception) {
+            println("[$tag] $message")
+        }
     }
 
     actual fun i(
         tag: String,
         message: String,
     ) {
-        Log.i(tag, message)
+        try {
+            Log.i(tag, message)
+        } catch (_: Exception) {
+            println("[$tag] $message")
+        }
     }
 
     actual fun w(
         tag: String,
         message: String,
     ) {
-        Log.w(tag, message)
+        try {
+            Log.w(tag, message)
+        } catch (_: Exception) {
+            println("[$tag] $message")
+        }
     }
 
     actual fun e(
@@ -29,6 +41,10 @@ actual object Logger {
         message: String,
         throwable: Throwable?,
     ) {
-        Log.e(tag, message, throwable)
+        try {
+            Log.e(tag, message, throwable)
+        } catch (_: Exception) {
+            println("[$tag] $message: $throwable")
+        }
     }
 }

@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kieling.groceries.Logger
 import com.kieling.groceries.presentation.auth.AuthViewModel
 import com.kieling.groceries.presentation.auth.LoginScreen
 import kotlinx.coroutines.launch
@@ -48,6 +49,7 @@ fun GroceryListScreen(
         LoginScreen(
             authViewModel = authViewModel,
             onSignInClick = {
+                Logger.i("GroceryListScreen", "Sign in with Google button clicked")
                 scope.launch {
                     authViewModel.signInWithGoogle()
                 }

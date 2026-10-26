@@ -89,7 +89,9 @@ actual class AuthManager actual constructor() {
                 try {
                     val resId = activity.resources.getIdentifier("google_client_id", "string", activity.packageName)
                     if (resId != 0) {
-                        activity.getString(resId)
+                        val id = activity.getString(resId)
+                        Logger.i(tag, "Google Client ID found: ${id.take(5)}...")
+                        id
                     } else {
                         throw IllegalStateException("google_client_id resource not found")
                     }
@@ -100,6 +102,7 @@ actual class AuthManager actual constructor() {
                 }
 
             val credentialManager = CredentialManager.create(activity)
+            Logger.i(tag, "CredentialManager created successfully")
             val googleIdOption =
                 GetGoogleIdOption
                     .Builder()

@@ -1,5 +1,6 @@
 package com.kieling.groceries.data.repository
 
+import com.kieling.groceries.Logger
 import com.kieling.groceries.data.AuthManager
 import com.kieling.groceries.domain.model.AuthUser
 import com.kieling.groceries.domain.repository.AuthRepository
@@ -10,7 +11,10 @@ class AuthRepositoryImpl(
 ) : AuthRepository {
     override val currentUser: StateFlow<AuthUser?> = authManager.currentUser
 
-    override suspend fun signInWithGoogle(): Result<AuthUser> = authManager.signInWithGoogle()
+    override suspend fun signInWithGoogle(): Result<AuthUser> {
+        Logger.i("AuthRepositoryImpl", "signInWithGoogle called")
+        return authManager.signInWithGoogle()
+    }
 
     override suspend fun signInWithEmail(
         email: String,
