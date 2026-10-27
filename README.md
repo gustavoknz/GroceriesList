@@ -1,26 +1,29 @@
-This is a Kotlin Multiplatform project targeting Android and Web. It also implements the Server.
+This is a Kotlin Multiplatform project targeting Android and Web. It also implements the Ktor Server backend.
 
 * [/app/shared](./app/shared/src) is for code that will be shared across your Compose Multiplatform applications.
   It contains several subfolders:
   - [commonMain](./app/shared/src/commonMain/kotlin) is for code that’s common for all targets.
   - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./app/shared/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./app/shared/src/jvmMain/kotlin)
-    folder is the appropriate location.
 
 * [/core](./core/src) is for the code that will be shared between all targets in the project.
-  The most important subfolder is [commonMain](./core/src/commonMain/kotlin). If preferred, you
-  can add code to the platform-specific folders here too.
+  - [ApiConfig.android.kt](./core/src/androidMain/kotlin/com/kieling/groceries/ApiConfig.android.kt): Configures the API base URL (`http://10.0.2.2:8080` for emulators or your local network IP `http://192.168.x.x:8080` for physical devices).
+  - [GroceryItem.kt](./core/src/commonMain/kotlin/com/kieling/groceries/domain/model/GroceryItem.kt): Domain model annotated with `@Serializable` for Ktor serialization.
 
 * [/server](./server/src/main/kotlin) is for the Ktor server application.
+  - [Application.kt](./server/src/main/kotlin/com/kieling/groceries/Application.kt): Ktor server implementation featuring file-based JSON persistence (`items.json`) so data survives server restarts.
+
+### Android Setup & Network Configuration
+- **Internet Permission & Cleartext Traffic**: [AndroidManifest.xml](./app/androidApp/src/main/AndroidManifest.xml) includes `android.permission.INTERNET` and `android:usesCleartextTraffic="true"` to allow HTTP communication with the server.
+- **Base URL**: 
+  - For Android Emulator: Uses `http://10.0.2.2:8080`.
+  - For Physical Devices: Update `getApiBaseUrl()` in `ApiConfig.android.kt` to your computer's local Wi-Fi IP address (e.g. `http://192.168.1.x:8080`), and ensure both devices are on the same Wi-Fi network.
 
 ### Running the apps
 
 Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
 
 - Android app: `./gradlew :app:androidApp:assembleDebug`
-- Server: `./gradlew :server:run`
+- Server (with auto-persistence to `items.json`): `./gradlew :server:run`
 - Web app:
   - Wasm target (faster, modern browsers): `./gradlew :app:webApp:wasmJsBrowserDevelopmentRun`
   - JS target (slower, supports older browsers): `./gradlew :app:webApp:jsBrowserDevelopmentRun`
