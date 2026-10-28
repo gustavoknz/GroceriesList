@@ -28,4 +28,14 @@ class ApplicationTest {
             val response = client.get("/nonexistent")
             assertEquals(HttpStatusCode.NotFound, response.status)
         }
+
+    @Test
+    fun testGetItems() =
+        testApplication {
+            application {
+                module()
+            }
+            val response = client.get("/items")
+            assertEquals(HttpStatusCode.OK, response.status)
+        }
 }
