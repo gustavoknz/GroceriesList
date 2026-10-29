@@ -3,6 +3,7 @@ package com.kieling.groceries
 import com.kieling.groceries.domain.model.GroceryItem
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -29,41 +30,43 @@ data class AddItemRequest(
 )
 
 private val json = Json { prettyPrint = true }
-private val dataFile = File("items.json")
+private val dataFile = File("items_by_user.json")
 
-private val itemsList: MutableList<GroceryItem> =
+private val defaultItems =
+    listOf(
+        GroceryItem(1, "Apples"),
+        GroceryItem(2, "Milk"),
+        GroceryItem(3, "Bread"),
+        GroceryItem(4, "Eggs"),
+        GroceryItem(5, "Cheese"),
+        GroceryItem(6, "Coffee"),
+    )
+
+private val userItemsMap: MutableMap<String, MutableList<GroceryItem>> =
     run {
         if (dataFile.exists()) {
             try {
-                json.decodeFromString<List<GroceryItem>>(dataFile.readText()).toMutableList()
+                json
+                    .decodeFromString<Map<String, List<GroceryItem>>>(dataFile.readText())
+                    .mapValues { it.value.toMutableList() }
+                    .toMutableMap()
             } catch (_: Exception) {
-                mutableListOf(
-                    GroceryItem(1, "Apples"),
-                    GroceryItem(2, "Milk"),
-                    GroceryItem(3, "Bread"),
-                    GroceryItem(4, "Eggs"),
-                    GroceryItem(5, "Cheese"),
-                    GroceryItem(6, "Coffee"),
-                )
+                mutableMapOf("default" to defaultItems.toMutableList())
             }
         } else {
-            mutableListOf(
-                GroceryItem(1, "Apples"),
-                GroceryItem(2, "Milk"),
-                GroceryItem(3, "Bread"),
-                GroceryItem(4, "Eggs"),
-                GroceryItem(5, "Cheese"),
-                GroceryItem(6, "Coffee"),
-            ).also { saveItems(it) }
+            mutableMapOf("default" to defaultItems.toMutableList())
+                .also { saveUserItems(it) }
         }
     }
 
-private fun saveItems(items: List<GroceryItem>) {
+private fun saveUserItems(map: Map<String, List<GroceryItem>>) {
     try {
-        dataFile.writeText(json.encodeToString(items))
+        dataFile.writeText(json.encodeToString(map))
     } catch (_: Exception) {
     }
 }
+
+private fun ApplicationCall.getUserId() = request.headers["X-User-Id"] ?: request.queryParameters["userId"] ?: "default"
 
 fun Application.module() {
     install(ContentNegotiation) {
@@ -74,37 +77,45 @@ fun Application.module() {
             call.respondText(sayHello("Ktor"))
         }
         get("/items") {
-            call.respond(itemsList.toList())
+            val userId = call.getUserId()
+            val list = userItemsMap.getOrPut(userId) { defaultItems.toMutableList() }
+            call.respond(list.toList())
         }
         post("/items") {
+            val userId = call.getUserId()
             val request = call.receive<AddItemRequest>()
-            val newId = (itemsList.maxOfOrNull { it.id } ?: 0) + 1
+            val list = userItemsMap.getOrPut(userId) { defaultItems.toMutableList() }
+            val newId = (list.maxOfOrNull { it.id } ?: 0) + 1
             val newItem = GroceryItem(id = newId, name = request.name.trim())
-            itemsList.add(newItem)
-            saveItems(itemsList)
-            call.respond(itemsList.toList())
+            list.add(newItem)
+            saveUserItems(userItemsMap)
+            call.respond(list.toList())
         }
         post("/items/{id}/toggle") {
+            val userId = call.getUserId()
             val id = call.parameters["id"]?.toIntOrNull()
+            val list = userItemsMap.getOrPut(userId) { defaultItems.toMutableList() }
             if (id != null) {
-                val index = itemsList.indexOfFirst { it.id == id }
+                val index = list.indexOfFirst { it.id == id }
                 if (index != -1) {
-                    val item = itemsList[index]
-                    itemsList[index] = item.copy(isChecked = !item.isChecked)
-                    saveItems(itemsList)
+                    val item = list[index]
+                    list[index] = item.copy(isChecked = !item.isChecked)
+                    saveUserItems(userItemsMap)
                 }
             }
-            call.respond(itemsList.toList())
+            call.respond(list.toList())
         }
         delete("/items/{id}") {
+            val userId = call.getUserId()
             val id = call.parameters["id"]?.toIntOrNull()
+            val list = userItemsMap.getOrPut(userId) { defaultItems.toMutableList() }
             if (id != null) {
-                val removed = itemsList.removeIf { it.id == id }
+                val removed = list.removeIf { it.id == id }
                 if (removed) {
-                    saveItems(itemsList)
+                    saveUserItems(userItemsMap)
                 }
             }
-            call.respond(itemsList.toList())
+            call.respond(list.toList())
         }
     }
 }

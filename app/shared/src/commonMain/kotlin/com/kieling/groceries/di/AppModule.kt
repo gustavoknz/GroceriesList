@@ -31,7 +31,7 @@ val appModule =
             }
         }
         single<AuthRepository> { AuthRepositoryImpl() }
-        single<GroceryRepository> { GroceryRepositoryImpl(get()) }
+        single<GroceryRepository> { GroceryRepositoryImpl(get(), get()) }
 
         factory { ObserveCurrentUserUseCase(get()) }
         factory { SignInWithGoogleUseCase(get()) }

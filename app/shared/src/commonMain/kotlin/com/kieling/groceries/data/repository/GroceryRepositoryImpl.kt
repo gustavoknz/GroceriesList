@@ -4,12 +4,14 @@ import com.kieling.groceries.Logger
 import com.kieling.groceries.data.model.GroceryItemDto
 import com.kieling.groceries.data.model.toDomain
 import com.kieling.groceries.domain.model.GroceryItem
+import com.kieling.groceries.domain.repository.AuthRepository
 import com.kieling.groceries.domain.repository.GroceryRepository
 import com.kieling.groceries.getApiBaseUrl
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -30,6 +32,7 @@ data class AddItemRequest(
 
 class GroceryRepositoryImpl(
     private val client: HttpClient,
+    private val authRepository: AuthRepository,
 ) : GroceryRepository {
     private val tag = "GroceryRepositoryImpl"
     private val baseUrl = getApiBaseUrl()
@@ -40,16 +43,23 @@ class GroceryRepositoryImpl(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     init {
-        refreshItems()
+        scope.launch {
+            authRepository.currentUser.collect { _ ->
+                refreshItems()
+            }
+        }
     }
+
+    private fun getUserId(): String = authRepository.currentUser.value?.uid ?: "default"
 
     private fun refreshItems() {
         scope.launch {
             try {
                 val fetched =
                     client
-                        .get("$baseUrl/items")
-                        .body<List<GroceryItemDto>>()
+                        .get("$baseUrl/items") {
+                            header("X-User-Id", getUserId())
+                        }.body<List<GroceryItemDto>>()
                         .map { it.toDomain() }
                 _items.value = fetched
             } catch (e: Exception) {
@@ -62,8 +72,9 @@ class GroceryRepositoryImpl(
         try {
             val fetched =
                 client
-                    .get("$baseUrl/items")
-                    .body<List<GroceryItemDto>>()
+                    .get("$baseUrl/items") {
+                        header("X-User-Id", getUserId())
+                    }.body<List<GroceryItemDto>>()
                     .map { it.toDomain() }
             _items.value = fetched
             return fetched
@@ -78,6 +89,7 @@ class GroceryRepositoryImpl(
             val updated =
                 client
                     .post("$baseUrl/items") {
+                        header("X-User-Id", getUserId())
                         contentType(ContentType.Application.Json)
                         setBody(AddItemRequest(name))
                     }.body<List<GroceryItemDto>>()
@@ -92,8 +104,9 @@ class GroceryRepositoryImpl(
         try {
             val updated =
                 client
-                    .post("$baseUrl/items/$id/toggle")
-                    .body<List<GroceryItemDto>>()
+                    .post("$baseUrl/items/$id/toggle") {
+                        header("X-User-Id", getUserId())
+                    }.body<List<GroceryItemDto>>()
                     .map { it.toDomain() }
             _items.value = updated
         } catch (e: Exception) {
@@ -105,8 +118,9 @@ class GroceryRepositoryImpl(
         try {
             val updated =
                 client
-                    .delete("$baseUrl/items/$id")
-                    .body<List<GroceryItemDto>>()
+                    .delete("$baseUrl/items/$id") {
+                        header("X-User-Id", getUserId())
+                    }.body<List<GroceryItemDto>>()
                     .map { it.toDomain() }
             _items.value = updated
         } catch (e: Exception) {
