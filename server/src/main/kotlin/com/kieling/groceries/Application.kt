@@ -45,14 +45,12 @@ private val defaultItems =
 private val userItemsMap: MutableMap<String, MutableList<GroceryItem>> =
     run {
         if (dataFile.exists()) {
-            try {
+            runCatching {
                 json
                     .decodeFromString<Map<String, List<GroceryItem>>>(dataFile.readText())
                     .mapValues { it.value.toMutableList() }
                     .toMutableMap()
-            } catch (_: Exception) {
-                mutableMapOf("default" to defaultItems.toMutableList())
-            }
+            }.getOrDefault(mutableMapOf("default" to defaultItems.toMutableList()))
         } else {
             mutableMapOf("default" to defaultItems.toMutableList())
                 .also { saveUserItems(it) }
@@ -60,13 +58,24 @@ private val userItemsMap: MutableMap<String, MutableList<GroceryItem>> =
     }
 
 private fun saveUserItems(map: Map<String, List<GroceryItem>>) {
-    try {
+    runCatching {
         dataFile.writeText(json.encodeToString(map))
-    } catch (_: Exception) {
     }
 }
 
-private fun ApplicationCall.getUserId() = request.headers["X-User-Id"] ?: request.queryParameters["userId"] ?: "default"
+private fun ApplicationCall.getUserId(): String = request.headers["X-User-Id"] ?: request.queryParameters["userId"] ?: "default"
+
+private fun ApplicationCall.getUserItems(): MutableList<GroceryItem> {
+    val userId = getUserId()
+    return userItemsMap.getOrPut(userId) { defaultItems.toMutableList() }
+}
+
+private inline fun ApplicationCall.updateUserItems(block: (MutableList<GroceryItem>) -> Unit): List<GroceryItem> {
+    val list = getUserItems()
+    block(list)
+    saveUserItems(userItemsMap)
+    return list.toList()
+}
 
 fun Application.module() {
     install(ContentNegotiation) {
@@ -77,45 +86,40 @@ fun Application.module() {
             call.respondText(sayHello("Ktor"))
         }
         get("/items") {
-            val userId = call.getUserId()
-            val list = userItemsMap.getOrPut(userId) { defaultItems.toMutableList() }
-            call.respond(list.toList())
+            call.respond(call.getUserItems().toList())
         }
         post("/items") {
-            val userId = call.getUserId()
             val request = call.receive<AddItemRequest>()
-            val list = userItemsMap.getOrPut(userId) { defaultItems.toMutableList() }
-            val newId = (list.maxOfOrNull { it.id } ?: 0) + 1
-            val newItem = GroceryItem(id = newId, name = request.name.trim())
-            list.add(newItem)
-            saveUserItems(userItemsMap)
-            call.respond(list.toList())
+            val updated =
+                call.updateUserItems { list ->
+                    val newId = (list.maxOfOrNull { it.id } ?: 0) + 1
+                    list.add(GroceryItem(id = newId, name = request.name.trim()))
+                }
+            call.respond(updated)
         }
         post("/items/{id}/toggle") {
-            val userId = call.getUserId()
             val id = call.parameters["id"]?.toIntOrNull()
-            val list = userItemsMap.getOrPut(userId) { defaultItems.toMutableList() }
-            if (id != null) {
-                val index = list.indexOfFirst { it.id == id }
-                if (index != -1) {
-                    val item = list[index]
-                    list[index] = item.copy(isChecked = !item.isChecked)
-                    saveUserItems(userItemsMap)
+            val updated =
+                call.updateUserItems { list ->
+                    if (id != null) {
+                        val index = list.indexOfFirst { it.id == id }
+                        if (index != -1) {
+                            val item = list[index]
+                            list[index] = item.copy(isChecked = !item.isChecked)
+                        }
+                    }
                 }
-            }
-            call.respond(list.toList())
+            call.respond(updated)
         }
         delete("/items/{id}") {
-            val userId = call.getUserId()
             val id = call.parameters["id"]?.toIntOrNull()
-            val list = userItemsMap.getOrPut(userId) { defaultItems.toMutableList() }
-            if (id != null) {
-                val removed = list.removeIf { it.id == id }
-                if (removed) {
-                    saveUserItems(userItemsMap)
+            val updated =
+                call.updateUserItems { list ->
+                    if (id != null) {
+                        list.removeIf { it.id == id }
+                    }
                 }
-            }
-            call.respond(list.toList())
+            call.respond(updated)
         }
     }
 }
