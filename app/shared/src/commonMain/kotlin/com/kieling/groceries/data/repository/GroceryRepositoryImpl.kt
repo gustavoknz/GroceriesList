@@ -13,6 +13,7 @@ import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -28,6 +29,13 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AddItemRequest(
     val name: String,
+    val group: String = "General",
+)
+
+@Serializable
+data class RenameGroupRequest(
+    val oldName: String,
+    val newName: String,
 )
 
 class GroceryRepositoryImpl(
@@ -84,14 +92,14 @@ class GroceryRepositoryImpl(
         }
     }
 
-    override suspend fun addItem(name: String) {
+    override suspend fun addItem(name: String, group: String) {
         try {
             val updated =
                 client
                     .post("$baseUrl/items") {
                         header("X-User-Id", getUserId())
                         contentType(ContentType.Application.Json)
-                        setBody(AddItemRequest(name))
+                        setBody(AddItemRequest(name, group))
                     }.body<List<GroceryItemDto>>()
                     .map { it.toDomain() }
             _items.value = updated
@@ -125,6 +133,22 @@ class GroceryRepositoryImpl(
             _items.value = updated
         } catch (e: Exception) {
             Logger.e(tag, "Error deleting item: $id", e)
+        }
+    }
+
+    override suspend fun renameGroup(oldName: String, newName: String) {
+        try {
+            val updated =
+                client
+                    .put("$baseUrl/groups/rename") {
+                        header("X-User-Id", getUserId())
+                        contentType(ContentType.Application.Json)
+                        setBody(RenameGroupRequest(oldName, newName))
+                    }.body<List<GroceryItemDto>>()
+                    .map { it.toDomain() }
+            _items.value = updated
+        } catch (e: Exception) {
+            Logger.e(tag, "Error renaming group: $oldName -> $newName", e)
         }
     }
 }

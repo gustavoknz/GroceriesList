@@ -9,6 +9,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import io.ktor.server.routing.put
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -16,6 +17,13 @@ import java.io.File
 @Serializable
 data class AddItemRequest(
     val name: String,
+    val group: String = "General",
+)
+
+@Serializable
+data class RenameGroupRequest(
+    val oldName: String,
+    val newName: String,
 )
 
 private val json = Json { prettyPrint = true }
@@ -23,12 +31,12 @@ private val dataFile = File("items_by_user.json")
 
 private val defaultItems =
     listOf(
-        GroceryItem(1, "Apples"),
-        GroceryItem(2, "Milk"),
-        GroceryItem(3, "Bread"),
-        GroceryItem(4, "Eggs"),
-        GroceryItem(5, "Cheese"),
-        GroceryItem(6, "Coffee"),
+        GroceryItem(1, "Apples", group = "Fruits"),
+        GroceryItem(2, "Milk", group = "Dairy"),
+        GroceryItem(3, "Bread", group = "Bakery"),
+        GroceryItem(4, "Eggs", group = "Dairy"),
+        GroceryItem(5, "Cheese", group = "Dairy"),
+        GroceryItem(6, "Coffee", group = "Beverages"),
     )
 
 private val userItemsMap: MutableMap<String, MutableList<GroceryItem>> =
@@ -80,7 +88,7 @@ fun Route.groceryRoutes() {
         val updated =
             call.updateUserItems { list ->
                 val newId = (list.maxOfOrNull { it.id } ?: 0) + 1
-                list.add(GroceryItem(id = newId, name = request.name.trim()))
+                list.add(GroceryItem(id = newId, name = request.name.trim(), group = request.group))
             }
         call.respond(updated)
     }
@@ -104,6 +112,18 @@ fun Route.groceryRoutes() {
             call.updateUserItems { list ->
                 if (id != null) {
                     list.removeIf { it.id == id }
+                }
+            }
+        call.respond(updated)
+    }
+    put("/groups/rename") {
+        val request = call.receive<RenameGroupRequest>()
+        val updated =
+            call.updateUserItems { list ->
+                list.forEachIndexed { index, item ->
+                    if (item.group == request.oldName) {
+                        list[index] = item.copy(group = request.newName)
+                    }
                 }
             }
         call.respond(updated)

@@ -8,9 +8,11 @@ interface GroceryRepository {
 
     suspend fun getItems(): List<GroceryItem>
 
-    suspend fun addItem(name: String)
+    suspend fun addItem(name: String, group: String = "General")
 
     suspend fun toggleItem(id: Int)
 
     suspend fun deleteItem(id: Int)
+
+    suspend fun renameGroup(oldName: String, newName: String)
 }
