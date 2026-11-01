@@ -92,7 +92,10 @@ class GroceryRepositoryImpl(
         }
     }
 
-    override suspend fun addItem(name: String, group: String) {
+    override suspend fun addItem(
+        name: String,
+        group: String,
+    ) {
         try {
             val updated =
                 client
@@ -132,11 +135,18 @@ class GroceryRepositoryImpl(
                     .map { it.toDomain() }
             _items.value = updated
         } catch (e: Exception) {
-            Logger.e(tag, "Error deleting item: $id", e)
+            Logger.e(
+                tag,
+                "Error deleting item: $id",
+                e,
+            )
         }
     }
 
-    override suspend fun renameGroup(oldName: String, newName: String) {
+    override suspend fun renameGroup(
+        oldName: String,
+        newName: String,
+    ) {
         try {
             val updated =
                 client

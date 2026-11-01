@@ -5,5 +5,8 @@ import com.kieling.groceries.domain.repository.GroceryRepository
 class AddGroceryItemUseCase(
     private val groceryRepository: GroceryRepository,
 ) {
-    suspend operator fun invoke(name: String, group: String = "General") = groceryRepository.addItem(name, group)
+    suspend operator fun invoke(
+        name: String,
+        group: String = "General",
+    ) = groceryRepository.addItem(name, group)
 }
