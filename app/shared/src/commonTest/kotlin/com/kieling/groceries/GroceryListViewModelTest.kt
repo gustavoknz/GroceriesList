@@ -1,8 +1,6 @@
 package com.kieling.groceries
 
 import com.kieling.groceries.data.repository.AuthRepositoryImpl
-import com.kieling.groceries.domain.model.GroceryItem
-import com.kieling.groceries.domain.repository.GroceryRepository
 import com.kieling.groceries.domain.usecase.AddGroceryItemUseCase
 import com.kieling.groceries.domain.usecase.DeleteGroceryItemUseCase
 import com.kieling.groceries.domain.usecase.GetGroceryItemsUseCase
@@ -12,9 +10,6 @@ import com.kieling.groceries.domain.usecase.SignOutUseCase
 import com.kieling.groceries.domain.usecase.ToggleGroceryItemUseCase
 import com.kieling.groceries.presentation.grocery.GroceryListViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -26,50 +21,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-
-class FakeGroceryRepository : GroceryRepository {
-    private val _items =
-        MutableStateFlow(
-            listOf(
-                GroceryItem(1, "Apples"),
-                GroceryItem(2, "Milk"),
-                GroceryItem(3, "Bread"),
-            ),
-        )
-    override val items: StateFlow<List<GroceryItem>> = _items.asStateFlow()
-
-    override suspend fun getItems(): List<GroceryItem> = _items.value
-
-    override suspend fun addItem(
-        name: String,
-        group: String,
-    ) {
-        val current = _items.value
-        val newItem = GroceryItem(current.size + 1, name, group = group)
-        _items.value = current + newItem
-    }
-
-    override suspend fun toggleItem(id: Int) {
-        _items.value = _items.value.map { if (it.id == id) it.copy(isChecked = !it.isChecked) else it }
-    }
-
-    override suspend fun deleteItem(id: Int) {
-        _items.value = _items.value.filter { it.id != id }
-    }
-
-    override suspend fun renameGroup(
-        oldName: String,
-        newName: String,
-    ) {
-        _items.value
-            .find { it.group == oldName }
-            ?.let { item ->
-                _items.value =
-                    _items.value
-                        .map { if (it.id == item.id) it.copy(group = newName) else it }
-            }
-    }
-}
 
 class GroceryListViewModelTest {
     private val testDispatcher = UnconfinedTestDispatcher()
