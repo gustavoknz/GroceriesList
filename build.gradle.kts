@@ -1,3 +1,8 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+import org.jlleitschuh.gradle.ktlint.KtlintExtension
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+
 plugins {
     // this is necessary to avoid the plugins to be loaded multiple times
     // in each subproject's classloader
@@ -19,7 +24,7 @@ subprojects {
     pluginManager.apply("org.jetbrains.kotlinx.kover")
 
     plugins.withId("org.jetbrains.kotlin.multiplatform") {
-        extensions.configure<org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension> {
+        extensions.configure<KotlinMultiplatformExtension> {
             sourceSets.all {
                 languageSettings.optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
                 languageSettings.optIn("androidx.compose.ui.ExperimentalComposeUiApi")
@@ -27,13 +32,13 @@ subprojects {
         }
     }
 
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
+    tasks.withType<KotlinCompilationTask<*>>().configureEach {
         compilerOptions {
             freeCompilerArgs.add("-Xexpect-actual-classes")
         }
     }
 
-    configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+    configure<KtlintExtension> {
         android.set(true)
         ignoreFailures.set(false)
         filter {
@@ -41,8 +46,8 @@ subprojects {
             exclude("**/build/**")
         }
         reporters {
-            reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
-            reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
+            reporter(ReporterType.PLAIN)
+            reporter(ReporterType.CHECKSTYLE)
         }
     }
 }
