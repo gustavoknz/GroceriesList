@@ -1,5 +1,6 @@
 package com.kieling.groceries
 
+import com.kieling.groceries.model.AddItemRequest
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.header
