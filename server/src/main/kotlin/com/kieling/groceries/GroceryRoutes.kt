@@ -1,6 +1,8 @@
 package com.kieling.groceries
 
 import com.kieling.groceries.domain.model.GroceryItem
+import com.kieling.groceries.model.AddItemRequest
+import com.kieling.groceries.model.RenameGroupRequest
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -10,21 +12,8 @@ import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.File
-
-@Serializable
-data class AddItemRequest(
-    val name: String,
-    val group: String = "General",
-)
-
-@Serializable
-data class RenameGroupRequest(
-    val oldName: String,
-    val newName: String,
-)
 
 private val json = Json { prettyPrint = true }
 private val dataFile = File("items_by_user.json")

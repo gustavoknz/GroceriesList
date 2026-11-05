@@ -1,6 +1,5 @@
 package com.kieling.groceries.data.model
 
-import com.kieling.groceries.domain.model.GroceryGroup
 import com.kieling.groceries.domain.model.GroceryItem
 import kotlinx.serialization.Serializable
 
@@ -27,7 +26,3 @@ fun GroceryItem.toDto(): GroceryItemDto =
         isChecked = isChecked,
         group = group,
     )
-
-fun List<GroceryItem>.toGroups(): List<GroceryGroup> =
-    groupBy { it.group }
-        .map { (groupName, items) -> GroceryGroup(name = groupName, items = items) }

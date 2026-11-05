@@ -9,9 +9,3 @@ data class GroceryItem(
     val isChecked: Boolean = false,
     val group: String = "General",
 )
-
-@Serializable
-data class GroceryGroup(
-    val name: String,
-    val items: List<GroceryItem> = emptyList(),
-)

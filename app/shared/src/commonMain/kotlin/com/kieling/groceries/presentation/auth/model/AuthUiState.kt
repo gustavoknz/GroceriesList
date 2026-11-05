@@ -1,4 +1,4 @@
-package com.kieling.groceries.presentation.auth
+package com.kieling.groceries.presentation.auth.model
 
 import androidx.compose.runtime.Immutable
 
