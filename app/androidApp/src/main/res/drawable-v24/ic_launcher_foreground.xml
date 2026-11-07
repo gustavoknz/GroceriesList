@@ -17,9 +17,9 @@
 
     <!-- Checkmark -->
     <path
-        android:strokeColor="#FFFFFF"
+        android:pathData="M71,34l5,5l9,-10"
         android:strokeWidth="3.5"
+        android:strokeColor="#FFFFFF"
         android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M71,34l5,5l9,-10" />
+        android:strokeLineJoin="round" />
 </vector>
