@@ -8,6 +8,7 @@ import com.kieling.groceries.domain.usecase.AddGroceryItemUseCase
 import com.kieling.groceries.domain.usecase.DeleteGroceryItemUseCase
 import com.kieling.groceries.domain.usecase.GetGroceryItemsUseCase
 import com.kieling.groceries.domain.usecase.ObserveCurrentUserUseCase
+import com.kieling.groceries.domain.usecase.RenameGroupUseCase
 import com.kieling.groceries.domain.usecase.SignInWithEmailUseCase
 import com.kieling.groceries.domain.usecase.SignInWithGoogleUseCase
 import com.kieling.groceries.domain.usecase.SignOutUseCase
@@ -42,7 +43,8 @@ val appModule =
         factory { AddGroceryItemUseCase(get()) }
         factory { ToggleGroceryItemUseCase(get()) }
         factory { DeleteGroceryItemUseCase(get()) }
+        factory { RenameGroupUseCase(get()) }
 
         viewModel { AuthViewModel(get(), get(), get(), get()) }
-        viewModel { GroceryListViewModel(get(), get(), get(), get(), get(), get(), get()) }
+        viewModel { GroceryListViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
     }

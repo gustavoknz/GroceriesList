@@ -40,12 +40,7 @@ class FakeGroceryRepository : GroceryRepository {
         oldName: String,
         newName: String,
     ) {
-        _items.value
-            .find { it.group == oldName }
-            ?.let { item ->
-                _items.value =
-                    _items.value
-                        .map { if (it.id == item.id) it.copy(group = newName) else it }
-            }
+        _items.value =
+            _items.value.map { if (it.group == oldName) it.copy(group = newName) else it }
     }
 }

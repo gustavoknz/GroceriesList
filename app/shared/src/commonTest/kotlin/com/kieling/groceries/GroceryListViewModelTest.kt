@@ -5,6 +5,7 @@ import com.kieling.groceries.domain.usecase.AddGroceryItemUseCase
 import com.kieling.groceries.domain.usecase.DeleteGroceryItemUseCase
 import com.kieling.groceries.domain.usecase.GetGroceryItemsUseCase
 import com.kieling.groceries.domain.usecase.ObserveCurrentUserUseCase
+import com.kieling.groceries.domain.usecase.RenameGroupUseCase
 import com.kieling.groceries.domain.usecase.SignInWithGoogleUseCase
 import com.kieling.groceries.domain.usecase.SignOutUseCase
 import com.kieling.groceries.domain.usecase.ToggleGroceryItemUseCase
@@ -40,6 +41,7 @@ class GroceryListViewModelTest {
                 deleteGroceryItemUseCase = DeleteGroceryItemUseCase(groceryRepo),
                 signOutUseCase = SignOutUseCase(authRepo),
                 signInWithGoogleUseCase = SignInWithGoogleUseCase(authRepo),
+                renameGroupUseCase = RenameGroupUseCase(groceryRepo),
             )
     }
 
@@ -53,18 +55,43 @@ class GroceryListViewModelTest {
         runTest {
             val items = viewModel.uiState.value.items
             assertTrue(items.isNotEmpty())
+            val groups = viewModel.uiState.value.groups
+            assertTrue(groups.isNotEmpty())
         }
 
     @Test
     fun testAddGroceryItem() =
         runTest {
             viewModel.updateNewItemName("Bananas")
+            viewModel.updateNewItemGroup("Produce")
             viewModel.addItem()
             advanceUntilIdle()
 
             val items = viewModel.uiState.value.items
-            assertTrue(items.any { it.name == "Bananas" })
+            assertTrue(items.any { it.name == "Bananas" && it.group == "Produce" })
             assertEquals("", viewModel.uiState.value.newItemName)
+
+            val groups = viewModel.uiState.value.groups
+            assertTrue(groups.any { it.name == "Produce" })
+        }
+
+    @Test
+    fun testRenameGroup() =
+        runTest {
+            viewModel.updateNewItemName("Carrots")
+            viewModel.updateNewItemGroup("Veg")
+            viewModel.addItem()
+            advanceUntilIdle()
+
+            viewModel.renameGroup("Veg", "Vegetables")
+            advanceUntilIdle()
+
+            val groups = viewModel.uiState.value.groups
+            assertTrue(groups.any { it.name == "Vegetables" })
+            assertFalse(groups.any { it.name == "Veg" })
+
+            val items = viewModel.uiState.value.items
+            assertTrue(items.any { it.name == "Carrots" && it.group == "Vegetables" })
         }
 
     @Test

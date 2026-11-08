@@ -3,6 +3,8 @@ package com.kieling.groceries.presentation.model
 import androidx.compose.runtime.Immutable
 import com.kieling.groceries.domain.model.GroceryGroup
 import com.kieling.groceries.domain.model.GroceryItem
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 
 @Immutable
 data class GroceryItemUi(
@@ -15,7 +17,7 @@ data class GroceryItemUi(
 @Immutable
 data class GroceryGroupUi(
     val name: String,
-    val items: List<GroceryItemUi>,
+    val items: ImmutableList<GroceryItemUi>,
 )
 
 fun GroceryItem.toUi(): GroceryItemUi =
@@ -29,5 +31,5 @@ fun GroceryItem.toUi(): GroceryItemUi =
 fun GroceryGroup.toUi(): GroceryGroupUi =
     GroceryGroupUi(
         name = name,
-        items = items.map { it.toUi() },
+        items = items.map { it.toUi() }.toImmutableList(),
     )

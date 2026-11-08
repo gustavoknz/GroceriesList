@@ -1,10 +1,12 @@
 package com.kieling.groceries
 
 import com.kieling.groceries.model.AddItemRequest
+import com.kieling.groceries.model.RenameGroupRequest
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
@@ -98,5 +100,29 @@ class ApplicationTest {
             assertEquals(HttpStatusCode.OK, getResponseB.status)
             val bodyB = getResponseB.bodyAsText()
             assertFalse(bodyB.contains("User A Item"))
+        }
+
+    @Test
+    fun testRenameGroup() =
+        testApplication {
+            application {
+                module()
+            }
+            val client =
+                createClient {
+                    install(ContentNegotiation) {
+                        json()
+                    }
+                }
+            val renameResponse =
+                client.put("/groups/rename") {
+                    header("X-User-Id", "user_rename_test")
+                    contentType(ContentType.Application.Json)
+                    setBody(RenameGroupRequest(oldName = "Dairy", newName = "Dairy & Eggs"))
+                }
+            assertEquals(HttpStatusCode.OK, renameResponse.status)
+            val body = renameResponse.bodyAsText()
+            assertTrue(body.contains("Dairy & Eggs"))
+            assertFalse(body.contains("\"group\":\"Dairy\""))
         }
 }

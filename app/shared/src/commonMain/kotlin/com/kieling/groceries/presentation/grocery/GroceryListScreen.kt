@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -19,15 +20,20 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -44,6 +50,42 @@ fun GroceryListScreen(
 ) {
     val uiState by groceryViewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
+    var groupBeingRenamed by remember { mutableStateOf<String?>(null) }
+    var renameText by remember { mutableStateOf("") }
+
+    if (groupBeingRenamed != null) {
+        AlertDialog(
+            onDismissRequest = { groupBeingRenamed = null },
+            title = { Text("Rename Group") },
+            text = {
+                OutlinedTextField(
+                    value = renameText,
+                    onValueChange = { renameText = it },
+                    label = { Text("Group Name") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        groupBeingRenamed?.let { oldName ->
+                            groceryViewModel.renameGroup(oldName, renameText)
+                        }
+                        groupBeingRenamed = null
+                    },
+                    enabled = renameText.isNotBlank(),
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { groupBeingRenamed = null }) {
+                    Text("Cancel")
+                }
+            },
+        )
+    }
 
     if (uiState.currentUser == null) {
         LoginScreen(
@@ -105,8 +147,15 @@ fun GroceryListScreen(
                     OutlinedTextField(
                         value = uiState.newItemName,
                         onValueChange = { groceryViewModel.updateNewItemName(it) },
+                        modifier = Modifier.weight(1.3f),
+                        placeholder = { Text("Item name...") },
+                        singleLine = true,
+                    )
+                    OutlinedTextField(
+                        value = uiState.newItemGroup,
+                        onValueChange = { groceryViewModel.updateNewItemGroup(it) },
                         modifier = Modifier.weight(1f),
-                        placeholder = { Text("Add new grocery item...") },
+                        placeholder = { Text("Group (optional)") },
                         singleLine = true,
                     )
                     Button(
@@ -120,7 +169,7 @@ fun GroceryListScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Grocery Items List
+                // Grocery Items List Grouped by Group
                 if (uiState.items.isEmpty()) {
                     Box(
                         modifier =
@@ -142,62 +191,107 @@ fun GroceryListScreen(
                                 .weight(1f),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        items(uiState.items, key = { it.id }) { item ->
-                            Card(
-                                modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            groceryViewModel.toggleItem(item.id)
-                                        },
-                                colors =
-                                    CardDefaults.cardColors(
-                                        containerColor =
-                                            if (item.isChecked) {
-                                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-                                            } else {
-                                                MaterialTheme.colorScheme.surface
+                        uiState.groups.forEach { group ->
+                            item(key = "group_header_${group.name}") {
+                                Surface(
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    shape = MaterialTheme.shapes.small,
+                                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                                ) {
+                                    Row(
+                                        modifier =
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        ) {
+                                            Text(
+                                                text = group.name,
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                            Text(
+                                                text = "(${group.items.size})",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                            )
+                                        }
+
+                                        TextButton(
+                                            onClick = {
+                                                groupBeingRenamed = group.name
+                                                renameText = group.name
                                             },
-                                    ),
-                            ) {
-                                Row(
+                                        ) {
+                                            Text("Rename")
+                                        }
+                                    }
+                                }
+                            }
+
+                            items(group.items, key = { it.id }) { item ->
+                                Card(
                                     modifier =
                                         Modifier
                                             .fillMaxWidth()
-                                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                        modifier = Modifier.weight(1f),
-                                    ) {
-                                        Checkbox(
-                                            checked = item.isChecked,
-                                            onCheckedChange = { _ ->
+                                            .clickable {
                                                 groceryViewModel.toggleItem(item.id)
                                             },
-                                        )
-                                        Text(
-                                            text = item.name,
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            textDecoration = if (item.isChecked) TextDecoration.LineThrough else TextDecoration.None,
-                                            color =
+                                    colors =
+                                        CardDefaults.cardColors(
+                                            containerColor =
                                                 if (item.isChecked) {
-                                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
                                                 } else {
-                                                    MaterialTheme.colorScheme.onSurface
+                                                    MaterialTheme.colorScheme.surface
                                                 },
-                                        )
-                                    }
-
-                                    TextButton(
-                                        onClick = {
-                                            groceryViewModel.deleteItem(item.id)
-                                        },
+                                        ),
+                                ) {
+                                    Row(
+                                        modifier =
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween,
                                     ) {
-                                        Text("Delete", color = MaterialTheme.colorScheme.error)
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                            modifier = Modifier.weight(1f),
+                                        ) {
+                                            Checkbox(
+                                                checked = item.isChecked,
+                                                onCheckedChange = { _ ->
+                                                    groceryViewModel.toggleItem(item.id)
+                                                },
+                                            )
+                                            Text(
+                                                text = item.name,
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                textDecoration = if (item.isChecked) TextDecoration.LineThrough else TextDecoration.None,
+                                                color =
+                                                    if (item.isChecked) {
+                                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                                    } else {
+                                                        MaterialTheme.colorScheme.onSurface
+                                                    },
+                                            )
+                                        }
+
+                                        TextButton(
+                                            onClick = {
+                                                groceryViewModel.deleteItem(item.id)
+                                            },
+                                        ) {
+                                            Text("Delete", color = MaterialTheme.colorScheme.error)
+                                        }
                                     }
                                 }
                             }
