@@ -1,0 +1,9 @@
+.git
+.gradle
+.idea
+.kotlin
+build
+**/build
+app
+kotlin-js-store
+*.hprof

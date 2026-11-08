@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: groceries-server
+    runtime: docker
+    plan: free
+    region: frankfurt # Change to oregon or ohio if preferred
+    dockerfilePath: Dockerfile
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 8080

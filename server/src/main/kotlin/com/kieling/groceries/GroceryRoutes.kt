@@ -16,7 +16,13 @@ import kotlinx.serialization.json.Json
 import java.io.File
 
 private val json = Json { prettyPrint = true }
-private val dataFile = File("items_by_user.json")
+private val dataDirectoryPath = System.getenv("DATA_DIR")
+private val dataFile =
+    if (dataDirectoryPath != null) {
+        File(dataDirectoryPath, "items_by_user.json")
+    } else {
+        File("items_by_user.json")
+    }
 
 private val defaultItems =
     listOf(
