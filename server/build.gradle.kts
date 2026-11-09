@@ -34,4 +34,3 @@ if (findProject(":app:webApp") != null) {
         }
     }
 }
-
