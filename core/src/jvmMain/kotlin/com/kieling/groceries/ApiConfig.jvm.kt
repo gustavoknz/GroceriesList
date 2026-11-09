@@ -1,3 +1,3 @@
 package com.kieling.groceries
 
-actual fun getApiBaseUrl(): String = "http://localhost:8080"
+actual fun getApiBaseUrl(): String = "https://grocerieslist-27j6.onrender.com"

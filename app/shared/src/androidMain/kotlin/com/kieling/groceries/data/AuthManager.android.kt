@@ -6,6 +6,7 @@ import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
@@ -103,22 +104,40 @@ actual class AuthManager actual constructor() {
 
             val credentialManager = CredentialManager.create(activity)
             Logger.i(tag, "CredentialManager created successfully")
-            val googleIdOption =
-                GetGoogleIdOption
-                    .Builder()
-                    .setServerClientId(clientId)
-                    .setFilterByAuthorizedAccounts(false)
-                    .build()
 
-            val request =
-                GetCredentialRequest
-                    .Builder()
-                    .addCredentialOption(googleIdOption)
-                    .build()
+            val credential =
+                try {
+                    val signInWithGoogleOption =
+                        GetSignInWithGoogleOption
+                            .Builder(serverClientId = clientId)
+                            .build()
 
-            val result = credentialManager.getCredential(activity, request)
-            val credential = result.credential
-            if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                    val request =
+                        GetCredentialRequest
+                            .Builder()
+                            .addCredentialOption(signInWithGoogleOption)
+                            .build()
+
+                    credentialManager.getCredential(activity, request).credential
+                } catch (e: Exception) {
+                    Logger.w(tag, "GetSignInWithGoogleOption failed, trying GetGoogleIdOption fallback: ${e.message}")
+                    val googleIdOption =
+                        GetGoogleIdOption
+                            .Builder()
+                            .setServerClientId(clientId)
+                            .setFilterByAuthorizedAccounts(false)
+                            .build()
+
+                    val fallbackRequest =
+                        GetCredentialRequest
+                            .Builder()
+                            .addCredentialOption(googleIdOption)
+                            .build()
+
+                    credentialManager.getCredential(activity, fallbackRequest).credential
+                }
+
+            if ((credential is CustomCredential) && (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL)) {
                 val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
                 val googleIdToken = googleIdTokenCredential.idToken
 
