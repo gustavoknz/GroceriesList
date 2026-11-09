@@ -5,7 +5,7 @@ services:
     plan: free
     region: frankfurt # Change to oregon or ohio if preferred
     dockerfilePath: Dockerfile
-    healthCheckPath: /
+    healthCheckPath: /health
     autoDeploy: true
     envVars:
       - key: PORT

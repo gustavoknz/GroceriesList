@@ -4,6 +4,6 @@
 .kotlin
 build
 **/build
-app
+app/androidApp
 kotlin-js-store
 *.hprof

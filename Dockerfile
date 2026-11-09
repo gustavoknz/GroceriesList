@@ -6,8 +6,10 @@ WORKDIR /home/gradle/project
 COPY gradlew gradlew.bat settings.gradle.kts build.gradle.kts gradle.properties ./
 COPY gradle gradle
 
-# Copy subprojects required for the server build
+# Copy subprojects required for the server and web build
 COPY core core
+COPY app/shared app/shared
+COPY app/webApp app/webApp
 COPY server server
 
 # Ensure Gradle wrapper is executable and build the server distribution

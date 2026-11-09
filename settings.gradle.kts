@@ -30,8 +30,12 @@ dependencyResolutionManagement {
 include(":core")
 include(":server")
 
-if (file("app").exists()) {
-    include(":app:androidApp")
+if (file("app/shared").exists()) {
     include(":app:shared")
+}
+if (file("app/webApp").exists()) {
     include(":app:webApp")
+}
+if (file("app/androidApp").exists()) {
+    include(":app:androidApp")
 }

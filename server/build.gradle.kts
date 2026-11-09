@@ -23,3 +23,15 @@ dependencies {
     testImplementation(libs.ktor.serialization.kotlinx.json)
     testImplementation(libs.kotlin.testJunit)
 }
+
+if (findProject(":app:webApp") != null) {
+    evaluationDependsOn(":app:webApp")
+    val webAppProject = project(":app:webApp")
+    tasks.named<ProcessResources>("processResources") {
+        dependsOn(webAppProject.tasks.named("jsBrowserDistribution"))
+        from(webAppProject.layout.buildDirectory.dir("dist/js/productionExecutable")) {
+            into("static")
+        }
+    }
+}
+

@@ -4,6 +4,7 @@ import com.kieling.groceries.domain.model.GroceryItem
 import com.kieling.groceries.model.AddItemRequest
 import com.kieling.groceries.model.RenameGroupRequest
 import io.ktor.server.application.ApplicationCall
+import io.ktor.server.http.content.staticResources
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
@@ -72,7 +73,8 @@ private inline fun ApplicationCall.updateUserItems(
 }
 
 fun Route.groceryRoutes() {
-    get("/") {
+    staticResources("/", "static", index = "index.html")
+    get("/health") {
         call.respondText(sayHello("Ktor"))
     }
     get("/items") {

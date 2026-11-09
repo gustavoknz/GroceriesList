@@ -34,6 +34,23 @@ class ApplicationTest {
                 }
             val response = client.get("/")
             assertEquals(HttpStatusCode.OK, response.status)
+            assertTrue(response.bodyAsText().contains("GroceriesList"))
+        }
+
+    @Test
+    fun testHealth() =
+        testApplication {
+            application {
+                module()
+            }
+            val client =
+                createClient {
+                    install(ContentNegotiation) {
+                        json()
+                    }
+                }
+            val response = client.get("/health")
+            assertEquals(HttpStatusCode.OK, response.status)
             assertEquals("Hello, Ktor!", response.bodyAsText())
         }
 
