@@ -82,10 +82,19 @@ fun Route.groceryRoutes() {
     }
     post("/items") {
         val request = call.receive<AddItemRequest>()
+        val trimmedName = request.name.trim()
+        val normalizedName = trimmedName.lowercase()
+        val targetGroup = request.group.trim().ifBlank { "General" }
         val updated =
             call.updateUserItems { list ->
-                val newId = (list.maxOfOrNull { it.id } ?: 0) + 1
-                list.add(GroceryItem(id = newId, name = request.name.trim(), group = request.group))
+                val existingIndex = list.indexOfFirst { it.name.trim().lowercase() == normalizedName && it.group == targetGroup }
+                if (existingIndex != -1) {
+                    val existing = list[existingIndex]
+                    list[existingIndex] = existing.copy(name = trimmedName, isChecked = false)
+                } else {
+                    val newId = (list.maxOfOrNull { it.id } ?: 0) + 1
+                    list.add(GroceryItem(id = newId, name = trimmedName, group = targetGroup))
+                }
             }
         call.respond(updated)
     }

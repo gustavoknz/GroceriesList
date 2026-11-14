@@ -76,6 +76,26 @@ class GroceryListViewModelTest {
         }
 
     @Test
+    fun testAddGroceryItemCaseInsensitiveAndTrimmed() =
+        runTest {
+            viewModel.updateNewItemName("  coffee  ")
+            viewModel.updateNewItemGroup("Beverages")
+            viewModel.addItem()
+            advanceUntilIdle()
+
+            // Add duplicate with different casing and spaces: " COFFEE "
+            viewModel.updateNewItemName(" COFFEE ")
+            viewModel.updateNewItemGroup("Beverages")
+            viewModel.addItem()
+            advanceUntilIdle()
+
+            val items = viewModel.uiState.value.items
+            val coffeeItems = items.filter { it.name.trim().lowercase() == "coffee" }
+            assertEquals(1, coffeeItems.size, "Should not create duplicate item for case-insensitive/trimmed match")
+            assertEquals("COFFEE", coffeeItems.first().name)
+        }
+
+    @Test
     fun testRenameGroup() =
         runTest {
             viewModel.updateNewItemName("Carrots")

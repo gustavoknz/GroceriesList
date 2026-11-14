@@ -23,9 +23,28 @@ class FakeGroceryRepository : GroceryRepository {
         name: String,
         group: String,
     ) {
+        val trimmedName = name.trim()
+        val normalizedName = trimmedName.lowercase()
+        val targetGroup = group.trim().ifBlank { "General" }
         val current = _items.value
-        val newItem = GroceryItem(current.size + 1, name, group = group)
-        _items.value = current + newItem
+        val existingIndex =
+            current.indexOfFirst {
+                it.name.trim().lowercase() == normalizedName && it.group == targetGroup
+            }
+        _items.value =
+            if (existingIndex != -1) {
+                current.mapIndexed { index, item ->
+                    if (index == existingIndex) {
+                        item.copy(name = trimmedName, isChecked = false)
+                    } else {
+                        item
+                    }
+                }
+            } else {
+                val newId = (current.maxOfOrNull { it.id } ?: 0) + 1
+                val newItem = GroceryItem(newId, trimmedName, group = targetGroup)
+                current + newItem
+            }
     }
 
     override suspend fun toggleItem(id: Int) {
