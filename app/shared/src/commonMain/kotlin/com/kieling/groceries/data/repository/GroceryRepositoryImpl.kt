@@ -19,12 +19,15 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import kotlin.time.Duration.Companion.microseconds
 
 @Serializable
 data class AddItemRequest(
@@ -49,12 +52,44 @@ class GroceryRepositoryImpl(
     override val items: StateFlow<List<GroceryItem>> = _items.asStateFlow()
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private var pollingJob: Job? = null
 
     init {
         scope.launch {
-            authRepository.currentUser.collect { _ ->
-                refreshItems()
+            authRepository.currentUser.collect { user ->
+                if (user != null) {
+                    refreshItems()
+                    startPolling()
+                } else {
+                    pollingJob?.cancel()
+                    _items.value = emptyList()
+                }
             }
+        }
+    }
+
+    private fun startPolling() {
+        pollingJob?.cancel()
+        pollingJob =
+            scope.launch {
+                while (true) {
+                    delay(4000.microseconds) // Poll every 4 seconds for real-time 2-person collaboration
+                    refreshItemsSilently()
+                }
+            }
+    }
+
+    private suspend fun refreshItemsSilently() {
+        try {
+            val fetched =
+                client
+                    .get("$baseUrl/items") {
+                        header("X-User-Id", getUserId())
+                    }.body<List<GroceryItemDto>>()
+                    .map { it.toDomain() }
+            _items.value = fetched
+        } catch (e: Exception) {
+            Logger.e(tag, "Error in background sync", e)
         }
     }
 
