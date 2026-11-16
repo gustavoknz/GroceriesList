@@ -42,6 +42,7 @@ class GroceryListViewModelTest {
                 signOutUseCase = SignOutUseCase(authRepo),
                 signInWithGoogleUseCase = SignInWithGoogleUseCase(authRepo),
                 renameGroupUseCase = RenameGroupUseCase(groceryRepo),
+                groceryRepository = groceryRepo,
             )
     }
 
@@ -142,5 +143,21 @@ class GroceryListViewModelTest {
 
             val items = viewModel.uiState.value.items
             assertFalse(items.any { it.id == targetItem.id })
+        }
+
+    @Test
+    fun testCategoryReorderingAndCreation() =
+        runTest {
+            viewModel.addCategory("Snacks")
+            advanceUntilIdle()
+
+            val groupsBefore = viewModel.uiState.value.groups
+            assertTrue(groupsBefore.any { it.name == "Snacks" })
+
+            viewModel.reorderCategories(listOf("Snacks", "Fruits", "Dairy", "Bakery", "Beverages", "General"))
+            advanceUntilIdle()
+
+            val groupsAfter = viewModel.uiState.value.groups
+            assertEquals("Snacks", groupsAfter.first().name)
         }
 }

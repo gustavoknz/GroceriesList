@@ -17,7 +17,24 @@ class FakeGroceryRepository : GroceryRepository {
         )
     override val items: StateFlow<List<GroceryItem>> = _items.asStateFlow()
 
+    private val _categoryOrder =
+        MutableStateFlow(listOf("Fruits", "Dairy", "Bakery", "Beverages", "General"))
+    override val categoryOrder: StateFlow<List<String>> = _categoryOrder.asStateFlow()
+
     override suspend fun getItems(): List<GroceryItem> = _items.value
+
+    override suspend fun getCategories(): List<String> = _categoryOrder.value
+
+    override suspend fun addCategory(name: String) {
+        val trimmed = name.trim()
+        if (trimmed.isNotBlank() && !_categoryOrder.value.contains(trimmed)) {
+            _categoryOrder.value = _categoryOrder.value + trimmed
+        }
+    }
+
+    override suspend fun reorderCategories(newOrder: List<String>) {
+        _categoryOrder.value = newOrder
+    }
 
     override suspend fun addItem(
         name: String,
@@ -26,6 +43,9 @@ class FakeGroceryRepository : GroceryRepository {
         val trimmedName = name.trim()
         val normalizedName = trimmedName.lowercase()
         val targetGroup = group.trim().ifBlank { "General" }
+        if (!_categoryOrder.value.contains(targetGroup)) {
+            _categoryOrder.value = _categoryOrder.value + targetGroup
+        }
         val current = _items.value
         val existingIndex =
             current.indexOfFirst {
@@ -59,7 +79,17 @@ class FakeGroceryRepository : GroceryRepository {
         oldName: String,
         newName: String,
     ) {
+        val trimmed = newName.trim()
+        val categories = _categoryOrder.value.toMutableList()
+        val index = categories.indexOf(oldName)
+        if (index != -1) {
+            categories[index] = trimmed
+        } else if (!categories.contains(trimmed)) {
+            categories.add(trimmed)
+        }
+        _categoryOrder.value = categories
+
         _items.value =
-            _items.value.map { if (it.group == oldName) it.copy(group = newName) else it }
+            _items.value.map { if (it.group == oldName) it.copy(group = trimmed) else it }
     }
 }

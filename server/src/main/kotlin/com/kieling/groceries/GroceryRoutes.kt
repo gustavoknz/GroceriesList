@@ -25,6 +25,13 @@ private val dataFile =
         File("items_by_user.json")
     }
 
+private val categoryOrderFile =
+    if (dataDirectoryPath != null) {
+        File(dataDirectoryPath, "category_order.json")
+    } else {
+        File("category_order.json")
+    }
+
 private val defaultItems =
     listOf(
         GroceryItem(1, "Apples", group = "Fruits"),
@@ -50,9 +57,30 @@ private val userItemsMap: MutableMap<String, MutableList<GroceryItem>> =
         }
     }
 
+private val userCategoryOrderMap: MutableMap<String, MutableList<String>> =
+    run {
+        if (categoryOrderFile.exists()) {
+            runCatching {
+                json
+                    .decodeFromString<Map<String, List<String>>>(categoryOrderFile.readText())
+                    .mapValues { it.value.toMutableList() }
+                    .toMutableMap()
+            }.getOrDefault(mutableMapOf("default" to mutableListOf("Fruits", "Dairy", "Bakery", "Beverages", "General")))
+        } else {
+            mutableMapOf("default" to mutableListOf("Fruits", "Dairy", "Bakery", "Beverages", "General"))
+                .also { saveCategoryOrders(it) }
+        }
+    }
+
 private fun saveUserItems(map: Map<String, List<GroceryItem>>) {
     runCatching {
         dataFile.writeText(json.encodeToString(map))
+    }
+}
+
+private fun saveCategoryOrders(map: Map<String, List<String>>) {
+    runCatching {
+        categoryOrderFile.writeText(json.encodeToString(map))
     }
 }
 
@@ -80,11 +108,40 @@ fun Route.groceryRoutes() {
     get("/items") {
         call.respond(call.getUserItems().toList())
     }
+    get("/categories") {
+        val userId = call.getUserId()
+        val categories = userCategoryOrderMap.getOrPut(userId) { mutableListOf("Fruits", "Dairy", "Bakery", "Beverages", "General") }
+        call.respond(categories)
+    }
+    put("/categories/reorder") {
+        val newOrder = call.receive<List<String>>()
+        val userId = call.getUserId()
+        userCategoryOrderMap[userId] = newOrder.map { it.trim() }.toMutableList()
+        saveCategoryOrders(userCategoryOrderMap)
+        call.respond(userCategoryOrderMap[userId]!!)
+    }
+    post("/categories") {
+        val body = call.receive<Map<String, String>>()
+        val categoryName = body["name"]?.trim() ?: "General"
+        val userId = call.getUserId()
+        val categories = userCategoryOrderMap.getOrPut(userId) { mutableListOf("Fruits", "Dairy", "Bakery", "Beverages", "General") }
+        if (categoryName.isNotBlank() && !categories.contains(categoryName)) {
+            categories.add(categoryName)
+            saveCategoryOrders(userCategoryOrderMap)
+        }
+        call.respond(categories)
+    }
     post("/items") {
         val request = call.receive<AddItemRequest>()
         val trimmedName = request.name.trim()
         val normalizedName = trimmedName.lowercase()
         val targetGroup = request.group.trim().ifBlank { "General" }
+        val userId = call.getUserId()
+        val categories = userCategoryOrderMap.getOrPut(userId) { mutableListOf("Fruits", "Dairy", "Bakery", "Beverages", "General") }
+        if (!categories.contains(targetGroup)) {
+            categories.add(targetGroup)
+            saveCategoryOrders(userCategoryOrderMap)
+        }
         val updated =
             call.updateUserItems { list ->
                 val existingIndex = list.indexOfFirst { it.name.trim().lowercase() == normalizedName && it.group == targetGroup }
@@ -124,6 +181,16 @@ fun Route.groceryRoutes() {
     }
     put("/groups/rename") {
         val request = call.receive<RenameGroupRequest>()
+        val userId = call.getUserId()
+        val categories = userCategoryOrderMap.getOrPut(userId) { mutableListOf("Fruits", "Dairy", "Bakery", "Beverages", "General") }
+        val catIndex = categories.indexOf(request.oldName)
+        if (catIndex != -1) {
+            categories[catIndex] = request.newName
+        } else if (!categories.contains(request.newName)) {
+            categories.add(request.newName)
+        }
+        saveCategoryOrders(userCategoryOrderMap)
+
         val updated =
             call.updateUserItems { list ->
                 list.forEachIndexed { index, item ->

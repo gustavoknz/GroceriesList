@@ -5,13 +5,20 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface GroceryRepository {
     val items: StateFlow<List<GroceryItem>>
+    val categoryOrder: StateFlow<List<String>>
 
     suspend fun getItems(): List<GroceryItem>
+
+    suspend fun getCategories(): List<String>
 
     suspend fun addItem(
         name: String,
         group: String = "General",
     )
+
+    suspend fun addCategory(name: String)
+
+    suspend fun reorderCategories(newOrder: List<String>)
 
     suspend fun toggleItem(id: Int)
 

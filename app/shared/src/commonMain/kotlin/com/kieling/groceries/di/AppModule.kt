@@ -46,5 +46,5 @@ val appModule =
         factory { RenameGroupUseCase(get()) }
 
         viewModel { AuthViewModel(get(), get(), get(), get()) }
-        viewModel { GroceryListViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
+        viewModel { GroceryListViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     }

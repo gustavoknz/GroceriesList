@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import kotlin.time.Duration.Companion.microseconds
+import kotlin.time.Duration.Companion.seconds
 
 @Serializable
 data class AddItemRequest(
@@ -51,6 +51,9 @@ class GroceryRepositoryImpl(
     private val _items = MutableStateFlow<List<GroceryItem>>(emptyList())
     override val items: StateFlow<List<GroceryItem>> = _items.asStateFlow()
 
+    private val _categoryOrder = MutableStateFlow<List<String>>(listOf("Fruits", "Dairy", "Bakery", "Beverages", "General"))
+    override val categoryOrder: StateFlow<List<String>> = _categoryOrder.asStateFlow()
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var pollingJob: Job? = null
 
@@ -59,6 +62,7 @@ class GroceryRepositoryImpl(
             authRepository.currentUser.collect { user ->
                 if (user != null) {
                     refreshItems()
+                    refreshCategories()
                     startPolling()
                 } else {
                     pollingJob?.cancel()
@@ -73,8 +77,9 @@ class GroceryRepositoryImpl(
         pollingJob =
             scope.launch {
                 while (true) {
-                    delay(4000.microseconds) // Poll every 4 seconds for real-time 2-person collaboration
+                    delay(4.seconds) // Poll every 4 seconds for real-time 2-person collaboration
                     refreshItemsSilently()
+                    refreshCategoriesSilently()
                 }
             }
     }
@@ -90,6 +95,68 @@ class GroceryRepositoryImpl(
             _items.value = fetched
         } catch (e: Exception) {
             Logger.e(tag, "Error in background sync", e)
+        }
+    }
+
+    private suspend fun refreshCategories() {
+        refreshCategoriesSilently()
+    }
+
+    private suspend fun refreshCategoriesSilently() {
+        try {
+            val fetched =
+                client
+                    .get("$baseUrl/categories") {
+                        header("X-User-Id", getUserId())
+                    }.body<List<String>>()
+            _categoryOrder.value = fetched
+        } catch (e: Exception) {
+            Logger.e(tag, "Error syncing categories", e)
+        }
+    }
+
+    override suspend fun getCategories(): List<String> {
+        try {
+            val fetched =
+                client
+                    .get("$baseUrl/categories") {
+                        header("X-User-Id", getUserId())
+                    }.body<List<String>>()
+            _categoryOrder.value = fetched
+            return fetched
+        } catch (e: Exception) {
+            Logger.e(tag, "Error getting categories", e)
+            return _categoryOrder.value
+        }
+    }
+
+    override suspend fun addCategory(name: String) {
+        try {
+            val updated =
+                client
+                    .post("$baseUrl/categories") {
+                        header("X-User-Id", getUserId())
+                        contentType(ContentType.Application.Json)
+                        setBody(mapOf("name" to name))
+                    }.body<List<String>>()
+            _categoryOrder.value = updated
+        } catch (e: Exception) {
+            Logger.e(tag, "Error adding category: $name", e)
+        }
+    }
+
+    override suspend fun reorderCategories(newOrder: List<String>) {
+        try {
+            val updated =
+                client
+                    .put("$baseUrl/categories/reorder") {
+                        header("X-User-Id", getUserId())
+                        contentType(ContentType.Application.Json)
+                        setBody(newOrder)
+                    }.body<List<String>>()
+            _categoryOrder.value = updated
+        } catch (e: Exception) {
+            Logger.e(tag, "Error reordering categories", e)
         }
     }
 

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kieling.groceries.domain.model.AuthUser
 import com.kieling.groceries.domain.model.GroceryItem
+import com.kieling.groceries.domain.repository.GroceryRepository
 import com.kieling.groceries.domain.usecase.AddGroceryItemUseCase
 import com.kieling.groceries.domain.usecase.DeleteGroceryItemUseCase
 import com.kieling.groceries.domain.usecase.GetGroceryItemsUseCase
@@ -31,6 +32,7 @@ class GroceryListViewModel(
     private val signOutUseCase: SignOutUseCase,
     private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
     private val renameGroupUseCase: RenameGroupUseCase,
+    private val groceryRepository: GroceryRepository,
 ) : ViewModel() {
     private val newItemNameFlow = MutableStateFlow("")
     private val newItemGroupFlow = MutableStateFlow("")
@@ -39,19 +41,23 @@ class GroceryListViewModel(
         combine(
             observeCurrentUserUseCase(),
             getGroceryItemsUseCase(),
+            groceryRepository.categoryOrder,
             newItemNameFlow,
             newItemGroupFlow,
-        ) { user: AuthUser?, items: List<GroceryItem>, newItemName: String, newItemGroup: String ->
+        ) { user: AuthUser?, items: List<GroceryItem>, categoryOrder: List<String>, newItemName: String, newItemGroup: String ->
             val uiItems = items.map { it.toUi() }
+            val groupedItems = items.groupBy { it.group.ifBlank { "General" } }
+            val allGroupNames = (categoryOrder + groupedItems.keys).distinct()
             val groups =
-                items
-                    .groupBy { it.group.ifBlank { "General" } }
-                    .map { (groupName, groupItems) ->
+                allGroupNames
+                    .map { groupName ->
+                        val groupItems = groupedItems[groupName] ?: emptyList()
                         GroceryGroupUi(
                             name = groupName,
                             items = groupItems.map { it.toUi() }.toImmutableList(),
                         )
-                    }.toImmutableList()
+                    }.filter { it.items.isNotEmpty() || categoryOrder.contains(it.name) }
+                    .toImmutableList()
 
             GroceryListUiState(
                 currentUser = user?.toUi(),
@@ -106,6 +112,21 @@ class GroceryListViewModel(
             viewModelScope.launch {
                 renameGroupUseCase(oldName, trimmed)
             }
+        }
+    }
+
+    fun addCategory(name: String) {
+        val trimmed = name.trim()
+        if (trimmed.isNotBlank()) {
+            viewModelScope.launch {
+                groceryRepository.addCategory(trimmed)
+            }
+        }
+    }
+
+    fun reorderCategories(newOrder: List<String>) {
+        viewModelScope.launch {
+            groceryRepository.reorderCategories(newOrder)
         }
     }
 

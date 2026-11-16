@@ -1,0 +1,16 @@
+{
+    "default": [
+        "Fruits",
+        "Dairy",
+        "Bakery",
+        "Beverages",
+        "General"
+    ],
+    "user_rename_test": [
+        "Fruits",
+        "Dairy & Eggs",
+        "Bakery",
+        "Beverages",
+        "General"
+    ]
+}
