@@ -36,8 +36,9 @@ class GroceryListViewModel(
 ) : ViewModel() {
     private val newItemNameFlow = MutableStateFlow("")
     private val newItemGroupFlow = MutableStateFlow("")
+    private val deletedItemFlow = MutableStateFlow<GroceryItem?>(null)
 
-    val uiState: StateFlow<GroceryListUiState> =
+    private val baseUiState: StateFlow<GroceryListUiState> =
         combine(
             observeCurrentUserUseCase(),
             getGroceryItemsUseCase(),
@@ -72,6 +73,15 @@ class GroceryListViewModel(
             initialValue = GroceryListUiState(),
         )
 
+    val uiState: StateFlow<GroceryListUiState> =
+        combine(baseUiState, deletedItemFlow) { base, deleted ->
+            base.copy(lastDeletedItemName = deleted?.name)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = GroceryListUiState(),
+        )
+
     fun updateNewItemName(name: String) {
         newItemNameFlow.value = name
     }
@@ -98,8 +108,23 @@ class GroceryListViewModel(
     }
 
     fun deleteItem(id: Int) {
-        viewModelScope.launch {
-            deleteGroceryItemUseCase(id)
+        val currentItems = groceryRepository.items.value
+        val itemToDelete = currentItems.find { it.id == id }
+        if (itemToDelete != null) {
+            deletedItemFlow.value = itemToDelete
+            viewModelScope.launch {
+                deleteGroceryItemUseCase(id)
+            }
+        }
+    }
+
+    fun undoDelete() {
+        val itemToRestore = deletedItemFlow.value
+        if (itemToRestore != null) {
+            deletedItemFlow.value = null
+            viewModelScope.launch {
+                addGroceryItemUseCase(itemToRestore.name, itemToRestore.group)
+            }
         }
     }
 

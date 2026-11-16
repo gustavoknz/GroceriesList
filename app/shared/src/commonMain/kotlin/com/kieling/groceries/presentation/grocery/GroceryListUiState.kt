@@ -14,4 +14,5 @@ data class GroceryListUiState(
     val groups: ImmutableList<GroceryGroupUi> = persistentListOf(),
     val newItemName: String = "",
     val newItemGroup: String = "",
+    val lastDeletedItemName: String? = null,
 )

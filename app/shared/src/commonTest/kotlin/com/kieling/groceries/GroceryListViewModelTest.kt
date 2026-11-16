@@ -160,4 +160,25 @@ class GroceryListViewModelTest {
             val groupsAfter = viewModel.uiState.value.groups
             assertEquals("Snacks", groupsAfter.first().name)
         }
+
+    @Test
+    fun testDeleteAndUndoGroceryItem() =
+        runTest {
+            val targetItem =
+                viewModel.uiState.value.items
+                    .first()
+            val itemName = targetItem.name
+            val itemGroup = targetItem.group
+
+            viewModel.deleteItem(targetItem.id)
+            advanceUntilIdle()
+
+            assertEquals(itemName, viewModel.uiState.value.lastDeletedItemName)
+
+            viewModel.undoDelete()
+            advanceUntilIdle()
+
+            val items = viewModel.uiState.value.items
+            assertTrue(items.any { it.name == itemName && it.group == itemGroup })
+        }
 }
