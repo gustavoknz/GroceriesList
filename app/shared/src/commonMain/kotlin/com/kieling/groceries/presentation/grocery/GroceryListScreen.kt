@@ -229,20 +229,20 @@ fun GroceryListScreen(
                             Modifier
                                 .fillMaxWidth()
                                 .weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
                         uiState.groups.forEach { group ->
                             item(key = "group_header_${group.name}") {
                                 Surface(
                                     color = MaterialTheme.colorScheme.surfaceVariant,
                                     shape = MaterialTheme.shapes.small,
-                                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                                    modifier = Modifier.fillMaxWidth().padding(top = 3.dp),
                                 ) {
                                     Row(
                                         modifier =
                                             Modifier
                                                 .fillMaxWidth()
-                                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                                                .padding(horizontal = 12.dp, vertical = 2.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                     ) {
@@ -297,7 +297,7 @@ fun GroceryListScreen(
                                         modifier =
                                             Modifier
                                                 .fillMaxWidth()
-                                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                                                .padding(horizontal = 16.dp, vertical = 4.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                     ) {
