@@ -2,7 +2,6 @@ package com.kieling.groceries.presentation.grocery
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -141,46 +140,52 @@ fun GroceryListScreen(
                             .padding(bottom = 12.dp),
                 )
 
-                // Input row to add new grocery item
-                Row(
+                // Input card to add new grocery item
+                Card(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 ) {
-                    OutlinedTextField(
-                        value = uiState.newItemName,
-                        onValueChange = { groceryViewModel.updateNewItemName(it) },
-                        modifier = Modifier.weight(1.3f),
-                        placeholder = { Text("Item name...") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions =
-                            KeyboardActions(
-                                onDone = {
-                                    groceryViewModel.addItem()
-                                },
-                            ),
-                    )
-                    OutlinedTextField(
-                        value = uiState.newItemGroup,
-                        onValueChange = { groceryViewModel.updateNewItemGroup(it) },
-                        modifier = Modifier.weight(1f),
-                        placeholder = { Text("Group (optional)") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions =
-                            KeyboardActions(
-                                onDone = {
-                                    groceryViewModel.addItem()
-                                },
-                            ),
-                    )
-                    Button(
-                        onClick = {
-                            groceryViewModel.addItem()
-                        },
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Text("Add")
+                        OutlinedTextField(
+                            value = uiState.newItemName,
+                            onValueChange = { groceryViewModel.updateNewItemName(it) },
+                            modifier = Modifier.weight(1.3f),
+                            placeholder = { Text("Item name...") },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            keyboardActions =
+                                KeyboardActions(
+                                    onDone = {
+                                        groceryViewModel.addItem()
+                                    },
+                                ),
+                        )
+                        OutlinedTextField(
+                            value = uiState.newItemGroup,
+                            onValueChange = { groceryViewModel.updateNewItemGroup(it) },
+                            modifier = Modifier.weight(1f),
+                            placeholder = { Text("Group (optional)") },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            keyboardActions =
+                                KeyboardActions(
+                                    onDone = {
+                                        groceryViewModel.addItem()
+                                    },
+                                ),
+                        )
+                        Button(
+                            onClick = {
+                                groceryViewModel.addItem()
+                            },
+                        ) {
+                            Text("Add")
+                        }
                     }
                 }
 
@@ -211,16 +216,29 @@ fun GroceryListScreen(
 
                 // Grocery Items List Grouped by Group
                 if (uiState.items.isEmpty()) {
-                    Box(
+                    Column(
                         modifier =
                             Modifier
                                 .fillMaxSize()
                                 .weight(1f),
-                        contentAlignment = Alignment.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
                     ) {
                         Text(
-                            text = "Your grocery list is empty!",
-                            style = MaterialTheme.typography.bodyLarge,
+                            text = "🛒",
+                            style = MaterialTheme.typography.displayMedium,
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Your grocery list is empty",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Add items above to shop together with your partner!",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                         )
                     }
                 } else {
@@ -233,8 +251,23 @@ fun GroceryListScreen(
                     ) {
                         uiState.groups.forEach { group ->
                             item(key = "group_header_${group.name}") {
+                                val categoryColors =
+                                    listOf(
+                                        MaterialTheme.colorScheme.primaryContainer,
+                                        MaterialTheme.colorScheme.secondaryContainer,
+                                        MaterialTheme.colorScheme.tertiaryContainer,
+                                        MaterialTheme.colorScheme.surfaceVariant,
+                                    )
+                                val categoryContentColors =
+                                    listOf(
+                                        MaterialTheme.colorScheme.onPrimaryContainer,
+                                        MaterialTheme.colorScheme.onSecondaryContainer,
+                                        MaterialTheme.colorScheme.onTertiaryContainer,
+                                        MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                val colorIndex = kotlin.math.abs(group.name.hashCode()) % categoryColors.size
                                 Surface(
-                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    color = categoryColors[colorIndex],
                                     shape = MaterialTheme.shapes.small,
                                     modifier = Modifier.fillMaxWidth().padding(top = 3.dp),
                                 ) {
@@ -254,12 +287,12 @@ fun GroceryListScreen(
                                                 text = group.name,
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                color = categoryContentColors[colorIndex],
                                             )
                                             Text(
                                                 text = "(${group.items.size})",
                                                 style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                                color = categoryContentColors[colorIndex].copy(alpha = 0.7f),
                                             )
                                         }
 
@@ -269,7 +302,7 @@ fun GroceryListScreen(
                                                 renameText = group.name
                                             },
                                         ) {
-                                            Text("Rename")
+                                            Text("Rename", color = categoryContentColors[colorIndex])
                                         }
                                     }
                                 }
