@@ -8,4 +8,6 @@ data class GroceryItem(
     val name: String,
     val isChecked: Boolean = false,
     val group: String = "General",
+    val quantity: Int = 1,
+    val addedBy: String = "",
 )

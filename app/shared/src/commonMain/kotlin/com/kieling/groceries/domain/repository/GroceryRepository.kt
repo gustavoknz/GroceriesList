@@ -22,6 +22,10 @@ interface GroceryRepository {
 
     suspend fun toggleItem(id: Int)
 
+    suspend fun incrementQuantity(id: Int)
+
+    suspend fun decrementQuantity(id: Int)
+
     suspend fun deleteItem(id: Int)
 
     suspend fun renameGroup(

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
@@ -330,13 +331,13 @@ fun GroceryListScreen(
                                         modifier =
                                             Modifier
                                                 .fillMaxWidth()
-                                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                                                .padding(horizontal = 12.dp, vertical = 4.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                     ) {
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                                             modifier = Modifier.weight(1f),
                                         ) {
                                             Checkbox(
@@ -345,25 +346,74 @@ fun GroceryListScreen(
                                                     groceryViewModel.toggleItem(item.id)
                                                 },
                                             )
-                                            Text(
-                                                text = item.name,
-                                                style = MaterialTheme.typography.bodyLarge,
-                                                textDecoration = if (item.isChecked) TextDecoration.LineThrough else TextDecoration.None,
-                                                color =
-                                                    if (item.isChecked) {
-                                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                                    } else {
-                                                        MaterialTheme.colorScheme.onSurface
-                                                    },
-                                            )
+                                            Column {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                                ) {
+                                                    Text(
+                                                        text = item.name,
+                                                        style = MaterialTheme.typography.bodyLarge,
+                                                        textDecoration = if (item.isChecked) TextDecoration.LineThrough else TextDecoration.None,
+                                                        color =
+                                                            if (item.isChecked) {
+                                                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                                            } else {
+                                                                MaterialTheme.colorScheme.onSurface
+                                                            },
+                                                    )
+                                                    if (item.quantity > 1) {
+                                                        Surface(
+                                                            color = MaterialTheme.colorScheme.primaryContainer,
+                                                            shape = MaterialTheme.shapes.extraSmall,
+                                                        ) {
+                                                            Text(
+                                                                text = "${item.quantity}x",
+                                                                style = MaterialTheme.typography.labelSmall,
+                                                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+                                                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                                if (item.addedBy.isNotBlank()) {
+                                                    Text(
+                                                        text = "added by ${item.addedBy}",
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                                                    )
+                                                }
+                                            }
                                         }
 
-                                        TextButton(
-                                            onClick = {
-                                                groceryViewModel.deleteItem(item.id)
-                                            },
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(0.dp),
                                         ) {
-                                            Text("Delete", color = MaterialTheme.colorScheme.error)
+                                            TextButton(
+                                                onClick = { groceryViewModel.decrementQuantity(item.id) },
+                                                modifier = Modifier.size(28.dp),
+                                            ) {
+                                                Text("-", fontWeight = FontWeight.Bold)
+                                            }
+                                            Text(
+                                                text = "${item.quantity}",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                fontWeight = FontWeight.Bold,
+                                            )
+                                            TextButton(
+                                                onClick = { groceryViewModel.incrementQuantity(item.id) },
+                                                modifier = Modifier.size(28.dp),
+                                            ) {
+                                                Text("+", fontWeight = FontWeight.Bold)
+                                            }
+                                            TextButton(
+                                                onClick = {
+                                                    groceryViewModel.deleteItem(item.id)
+                                                },
+                                            ) {
+                                                Text("Del", color = MaterialTheme.colorScheme.error)
+                                            }
                                         }
                                     }
                                 }

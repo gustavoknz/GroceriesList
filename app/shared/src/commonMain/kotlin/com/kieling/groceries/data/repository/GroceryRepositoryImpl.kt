@@ -33,6 +33,7 @@ import kotlin.time.Duration.Companion.seconds
 data class AddItemRequest(
     val name: String,
     val group: String = "General",
+    val quantity: Int = 1,
 )
 
 @Serializable
@@ -224,6 +225,34 @@ class GroceryRepositoryImpl(
             _items.value = updated
         } catch (e: Exception) {
             Logger.e(tag, "Error toggling item: $id", e)
+        }
+    }
+
+    override suspend fun incrementQuantity(id: Int) {
+        try {
+            val updated =
+                client
+                    .post("$baseUrl/items/$id/increment") {
+                        header("X-User-Id", getUserId())
+                    }.body<List<GroceryItemDto>>()
+                    .map { it.toDomain() }
+            _items.value = updated
+        } catch (e: Exception) {
+            Logger.e(tag, "Error incrementing quantity: $id", e)
+        }
+    }
+
+    override suspend fun decrementQuantity(id: Int) {
+        try {
+            val updated =
+                client
+                    .post("$baseUrl/items/$id/decrement") {
+                        header("X-User-Id", getUserId())
+                    }.body<List<GroceryItemDto>>()
+                    .map { it.toDomain() }
+            _items.value = updated
+        } catch (e: Exception) {
+            Logger.e(tag, "Error decrementing quantity: $id", e)
         }
     }
 

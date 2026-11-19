@@ -107,6 +107,18 @@ class GroceryListViewModel(
         }
     }
 
+    fun incrementQuantity(id: Int) {
+        viewModelScope.launch {
+            groceryRepository.incrementQuantity(id)
+        }
+    }
+
+    fun decrementQuantity(id: Int) {
+        viewModelScope.launch {
+            groceryRepository.decrementQuantity(id)
+        }
+    }
+
     fun deleteItem(id: Int) {
         val currentItems = groceryRepository.items.value
         val itemToDelete = currentItems.find { it.id == id }

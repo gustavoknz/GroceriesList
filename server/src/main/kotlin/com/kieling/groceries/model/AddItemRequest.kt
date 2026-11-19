@@ -6,4 +6,5 @@ import kotlinx.serialization.Serializable
 data class AddItemRequest(
     val name: String,
     val group: String = "General",
+    val quantity: Int = 1,
 )
