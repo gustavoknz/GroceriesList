@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Lista de Compras</string>
+    <string name="sign_in_to_continue">Entre para continuar</string>
+    <string name="create_new_account">Criar uma nova conta</string>
+    <string name="email">E-mail</string>
+    <string name="password">Senha</string>
+    <string name="register">Cadastrar</string>
+    <string name="sign_in_with_email">Entrar com E-mail</string>
+    <string name="already_have_account">Já tem uma conta? Entre</string>
+    <string name="create_account">Criar Conta</string>
+    <string name="sign_in_with_google">Entrar com o Google</string>
+    <string name="groceries_list">Lista de Compras</string>
+    <string name="sign_out">Sair</string>
+    <string name="welcome_user">Bem-vindo(a), {0}!</string>
+    <string name="item_name_hint">Nome do item...</string>
+    <string name="group_hint">Grupo (opcional)</string>
+    <string name="add">Adicionar</string>
+    <string name="deleted_item">Excluído \"{0}\"</string>
+    <string name="undo">Desfazer</string>
+    <string name="empty_list_title">Sua lista está vazia</string>
+    <string name="empty_list_subtitle">Adicione itens acima para comprar com seu parceiro(a)!</string>
+    <string name="rename">Renomear</string>
+    <string name="delete">Excluir</string>
+    <string name="rename_group_title">Renomear Grupo</string>
+    <string name="group_name_label">Nome do Grupo</string>
+    <string name="save">Salvar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="added_by">adicionado por {0}</string>
+</resources>

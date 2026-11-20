@@ -22,6 +22,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import grocerieslist.app.shared.generated.resources.Res
+import grocerieslist.app.shared.generated.resources.already_have_account
+import grocerieslist.app.shared.generated.resources.app_name
+import grocerieslist.app.shared.generated.resources.create_account
+import grocerieslist.app.shared.generated.resources.create_new_account
+import grocerieslist.app.shared.generated.resources.email
+import grocerieslist.app.shared.generated.resources.password
+import grocerieslist.app.shared.generated.resources.register
+import grocerieslist.app.shared.generated.resources.sign_in_to_continue
+import grocerieslist.app.shared.generated.resources.sign_in_with_email
+import grocerieslist.app.shared.generated.resources.sign_in_with_google
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -44,13 +56,13 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "Groceries List",
+                text = stringResource(Res.string.app_name),
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.primary,
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = if (uiState.isRegistering) "Create a new account" else "Sign in to continue",
+                text = if (uiState.isRegistering) stringResource(Res.string.create_new_account) else stringResource(Res.string.sign_in_to_continue),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -59,7 +71,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = uiState.email,
                 onValueChange = { authViewModel.updateEmail(it) },
-                label = { Text("Email") },
+                label = { Text(stringResource(Res.string.email)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
@@ -67,7 +79,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = uiState.password,
                 onValueChange = { authViewModel.updatePassword(it) },
-                label = { Text("Password") },
+                label = { Text(stringResource(Res.string.password)) },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -92,7 +104,16 @@ fun LoginScreen(
                         .height(50.dp),
                 enabled = !uiState.isLoading,
             ) {
-                Text(if (uiState.isRegistering) "Register" else "Sign In with Email", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    if (uiState.isRegistering) {
+                        stringResource(Res.string.register)
+                    } else {
+                        stringResource(
+                            Res.string.sign_in_with_email,
+                        )
+                    },
+                    style = MaterialTheme.typography.bodyLarge,
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -104,7 +125,16 @@ fun LoginScreen(
                         .fillMaxWidth()
                         .height(50.dp),
             ) {
-                Text(if (uiState.isRegistering) "Already have an account? Sign In" else "Create Account", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    if (uiState.isRegistering) {
+                        stringResource(Res.string.already_have_account)
+                    } else {
+                        stringResource(
+                            Res.string.create_account,
+                        )
+                    },
+                    style = MaterialTheme.typography.bodyLarge,
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -120,7 +150,7 @@ fun LoginScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                 enabled = !uiState.isLoading,
             ) {
-                Text("Sign in with Google", style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(Res.string.sign_in_with_google), style = MaterialTheme.typography.bodyLarge)
             }
         }
     }

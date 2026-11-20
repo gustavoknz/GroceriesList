@@ -46,8 +46,27 @@ import com.kieling.groceries.presentation.auth.AuthViewModel
 import com.kieling.groceries.presentation.auth.LoginScreen
 import com.kieling.groceries.presentation.model.GroceryGroupUi
 import com.kieling.groceries.presentation.model.GroceryItemUi
+import grocerieslist.app.shared.generated.resources.Res
+import grocerieslist.app.shared.generated.resources.add
+import grocerieslist.app.shared.generated.resources.added_by
+import grocerieslist.app.shared.generated.resources.cancel
+import grocerieslist.app.shared.generated.resources.delete
+import grocerieslist.app.shared.generated.resources.deleted_item
+import grocerieslist.app.shared.generated.resources.empty_list_subtitle
+import grocerieslist.app.shared.generated.resources.empty_list_title
+import grocerieslist.app.shared.generated.resources.groceries_list
+import grocerieslist.app.shared.generated.resources.group_hint
+import grocerieslist.app.shared.generated.resources.group_name_label
+import grocerieslist.app.shared.generated.resources.item_name_hint
+import grocerieslist.app.shared.generated.resources.rename
+import grocerieslist.app.shared.generated.resources.rename_group_title
+import grocerieslist.app.shared.generated.resources.save
+import grocerieslist.app.shared.generated.resources.sign_out
+import grocerieslist.app.shared.generated.resources.undo
+import grocerieslist.app.shared.generated.resources.welcome_user
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -88,12 +107,12 @@ fun GroceryListScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Groceries List") },
+                    title = { Text(stringResource(Res.string.groceries_list)) },
                     actions = {
                         TextButton(
                             onClick = { groceryViewModel.signOut() },
                         ) {
-                            Text("Sign Out", color = MaterialTheme.colorScheme.error)
+                            Text(stringResource(Res.string.sign_out), color = MaterialTheme.colorScheme.error)
                         }
                     },
                     colors =
@@ -145,8 +164,9 @@ fun GroceryListContent(
                 .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        val userName = uiState.currentUser?.displayName ?: uiState.currentUser?.email ?: "Usuário"
         Text(
-            text = "Welcome, ${uiState.currentUser?.displayName ?: uiState.currentUser?.email ?: "User"}!",
+            text = stringResource(Res.string.welcome_user, userName),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary,
             modifier =
@@ -229,7 +249,7 @@ fun QuickAddCard(
                 value = newItemName,
                 onValueChange = onItemNameChange,
                 modifier = Modifier.weight(1.3f),
-                placeholder = { Text("Item name...") },
+                placeholder = { Text(stringResource(Res.string.item_name_hint)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { onAddClick() }),
@@ -238,13 +258,13 @@ fun QuickAddCard(
                 value = newItemGroup,
                 onValueChange = onItemGroupChange,
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("Group (optional)") },
+                placeholder = { Text(stringResource(Res.string.group_hint)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { onAddClick() }),
             )
             Button(onClick = onAddClick) {
-                Text("Add")
+                Text(stringResource(Res.string.add))
             }
         }
     }
@@ -266,11 +286,11 @@ fun UndoBanner(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "Deleted \"$deletedItemName\"",
+                text = stringResource(Res.string.deleted_item, deletedItemName),
                 color = MaterialTheme.colorScheme.inverseOnSurface,
             )
             TextButton(onClick = onUndo) {
-                Text("Undo", color = MaterialTheme.colorScheme.inversePrimary)
+                Text(stringResource(Res.string.undo), color = MaterialTheme.colorScheme.inversePrimary)
             }
         }
     }
@@ -289,13 +309,13 @@ fun EmptyGroceryState(modifier: Modifier = Modifier) {
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Your grocery list is empty",
+            text = stringResource(Res.string.empty_list_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "Add items above to shop together with your partner!",
+            text = stringResource(Res.string.empty_list_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
         )
@@ -355,7 +375,7 @@ fun GroceryGroupHeader(
             }
 
             TextButton(onClick = onRenameClick) {
-                Text("Rename", color = categoryContentColors[colorIndex])
+                Text(stringResource(Res.string.rename), color = categoryContentColors[colorIndex])
             }
         }
     }
@@ -433,7 +453,7 @@ fun GroceryItemCard(
                     }
                     if (item.addedBy.isNotBlank()) {
                         Text(
-                            text = "added by ${item.addedBy}",
+                            text = stringResource(Res.string.added_by, item.addedBy),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                         )
@@ -463,7 +483,7 @@ fun GroceryItemCard(
                     Text("+", fontWeight = FontWeight.Bold)
                 }
                 TextButton(onClick = onDelete) {
-                    Text("Del", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(Res.string.delete), color = MaterialTheme.colorScheme.error)
                 }
             }
         }
@@ -480,12 +500,12 @@ fun RenameGroupDialog(
     var renameText by remember { mutableStateOf(initialRenameText) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Rename Group: $groupName") },
+        title = { Text("${stringResource(Res.string.rename_group_title)}: $groupName") },
         text = {
             OutlinedTextField(
                 value = renameText,
                 onValueChange = { renameText = it },
-                label = { Text("Group Name") },
+                label = { Text(stringResource(Res.string.group_name_label)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -495,12 +515,12 @@ fun RenameGroupDialog(
                 onClick = { onSave(renameText) },
                 enabled = renameText.isNotBlank(),
             ) {
-                Text("Save")
+                Text(stringResource(Res.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(Res.string.cancel))
             }
         },
     )
