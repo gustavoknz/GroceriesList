@@ -16,12 +16,32 @@ import com.kieling.groceries.domain.usecase.ToggleGroceryItemUseCase
 import com.kieling.groceries.presentation.model.GroceryGroupUi
 import com.kieling.groceries.presentation.model.toUi
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+sealed class DeletedEntity {
+    data class Item(
+        val item: GroceryItem,
+    ) : DeletedEntity()
+
+    data class Group(
+        val groupName: String,
+        val items: List<GroceryItem>,
+    ) : DeletedEntity()
+
+    val displayName: String
+        get() =
+            when (this) {
+                is Item -> item.name
+                is Group -> groupName
+            }
+}
 
 class GroceryListViewModel(
     observeCurrentUserUseCase: ObserveCurrentUserUseCase,
@@ -34,7 +54,8 @@ class GroceryListViewModel(
     private val renameGroupUseCase: RenameGroupUseCase,
     private val groceryRepository: GroceryRepository,
 ) : ViewModel() {
-    private val deletedItemFlow = MutableStateFlow<GroceryItem?>(null)
+    private val deletedEntityFlow = MutableStateFlow<DeletedEntity?>(null)
+    private var deleteUndoJob: Job? = null
 
     private val baseUiState: StateFlow<GroceryListUiState> =
         combine(
@@ -68,8 +89,8 @@ class GroceryListViewModel(
         )
 
     val uiState: StateFlow<GroceryListUiState> =
-        combine(baseUiState, deletedItemFlow) { base, deleted ->
-            base.copy(lastDeletedItemName = deleted?.name)
+        combine(baseUiState, deletedEntityFlow) { base, deleted ->
+            base.copy(lastDeletedName = deleted?.displayName)
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -86,19 +107,51 @@ class GroceryListViewModel(
         val currentItems = groceryRepository.items.value
         val itemToDelete = currentItems.find { it.id == id }
         if (itemToDelete != null) {
-            deletedItemFlow.value = itemToDelete
+            deletedEntityFlow.value = DeletedEntity.Item(itemToDelete)
+            startUndoTimer()
             viewModelScope.launch {
                 deleteGroceryItemUseCase(id)
             }
         }
     }
 
-    fun undoDelete() {
-        val itemToRestore = deletedItemFlow.value
-        if (itemToRestore != null) {
-            deletedItemFlow.value = null
+    fun deleteGroup(groupName: String) {
+        val currentItems = groceryRepository.items.value
+        val groupItems = currentItems.filter { it.group == groupName }
+        deletedEntityFlow.value = DeletedEntity.Group(groupName, groupItems)
+        startUndoTimer()
+        viewModelScope.launch {
+            groupItems.forEach { item ->
+                deleteGroceryItemUseCase(item.id)
+            }
+        }
+    }
+
+    private fun startUndoTimer() {
+        deleteUndoJob?.cancel()
+        deleteUndoJob =
             viewModelScope.launch {
-                addGroceryItemUseCase(itemToRestore.name, itemToRestore.group)
+                delay(3000)
+                deletedEntityFlow.value = null
+            }
+    }
+
+    fun undoDelete() {
+        val entity = deletedEntityFlow.value
+        if (entity != null) {
+            deletedEntityFlow.value = null
+            deleteUndoJob?.cancel()
+            viewModelScope.launch {
+                when (entity) {
+                    is DeletedEntity.Item -> {
+                        addGroceryItemUseCase(entity.item.name, entity.item.group)
+                    }
+                    is DeletedEntity.Group -> {
+                        entity.items.forEach { item ->
+                            addGroceryItemUseCase(item.name, item.group)
+                        }
+                    }
+                }
             }
         }
     }

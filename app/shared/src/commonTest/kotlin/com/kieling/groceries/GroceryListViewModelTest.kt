@@ -162,9 +162,8 @@ class GroceryListViewModelTest {
             val itemGroup = targetItem.group
 
             viewModel.deleteItem(targetItem.id)
-            advanceUntilIdle()
 
-            assertEquals(itemName, viewModel.uiState.value.lastDeletedItemName)
+            assertEquals(itemName, viewModel.uiState.value.lastDeletedName)
 
             viewModel.undoDelete()
             advanceUntilIdle()

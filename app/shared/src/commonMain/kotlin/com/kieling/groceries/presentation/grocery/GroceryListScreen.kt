@@ -55,10 +55,8 @@ import grocerieslist.app.shared.generated.resources.add_group_placeholder
 import grocerieslist.app.shared.generated.resources.add_item_placeholder
 import grocerieslist.app.shared.generated.resources.added_by
 import grocerieslist.app.shared.generated.resources.cancel
-import grocerieslist.app.shared.generated.resources.deleted_item
 import grocerieslist.app.shared.generated.resources.empty_list_subtitle
 import grocerieslist.app.shared.generated.resources.empty_list_title
-import grocerieslist.app.shared.generated.resources.groceries_list
 import grocerieslist.app.shared.generated.resources.group_name_label
 import grocerieslist.app.shared.generated.resources.item_name_label
 import grocerieslist.app.shared.generated.resources.rename
@@ -125,7 +123,13 @@ fun GroceryListScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(Res.string.groceries_list)) },
+                    title = {
+                        val userName =
+                            uiState.currentUser?.displayName?.substringBefore(" ")
+                                ?: uiState.currentUser?.email?.substringBefore("@")
+                        val titleText = if (!userName.isNullOrBlank()) "Olá, $userName!" else "Olá!"
+                        Text(titleText)
+                    },
                     actions = {
                         TextButton(
                             onClick = { groceryViewModel.signOut() },
@@ -146,7 +150,8 @@ fun GroceryListScreen(
                 modifier = Modifier.padding(paddingValues),
                 onUndoDelete = { groceryViewModel.undoDelete() },
                 onToggleItem = { groceryViewModel.toggleItem(it) },
-                onDelete = { groceryViewModel.deleteItem(it) },
+                onDeleteItem = { groceryViewModel.deleteItem(it) },
+                onDeleteGroup = { groceryViewModel.deleteGroup(it) },
                 onStartRenameGroup = { groupName ->
                     groupBeingRenamed = groupName
                     renameText = groupName
@@ -171,7 +176,8 @@ fun GroceryListContent(
     modifier: Modifier = Modifier,
     onUndoDelete: () -> Unit = {},
     onToggleItem: (Int) -> Unit = {},
-    onDelete: (Int) -> Unit = {},
+    onDeleteItem: (Int) -> Unit = {},
+    onDeleteGroup: (String) -> Unit = {},
     onStartRenameGroup: (String) -> Unit = {},
     onStartRenameItem: (GroceryItemUi) -> Unit = {},
     onAddItemToGroup: (String, String) -> Unit = { _, _ -> },
@@ -184,21 +190,10 @@ fun GroceryListContent(
                 .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        val userName = uiState.currentUser?.displayName ?: uiState.currentUser?.email ?: "Usuário"
-        Text(
-            text = "Bem-vindo(a), $userName!",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary,
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-        )
-
-        if (uiState.lastDeletedItemName != null) {
+        if (uiState.lastDeletedName != null) {
             Spacer(modifier = Modifier.height(4.dp))
             UndoBanner(
-                deletedItemName = uiState.lastDeletedItemName,
+                deletedName = uiState.lastDeletedName,
                 onUndo = onUndoDelete,
             )
         }
@@ -222,6 +217,7 @@ fun GroceryListContent(
                             itemCount = group.items.size,
                             onHeaderClick = { onStartRenameGroup(group.name) },
                             onRenameClick = { onStartRenameGroup(group.name) },
+                            onDeleteGroup = { onDeleteGroup(group.name) },
                         )
                     }
 
@@ -230,7 +226,7 @@ fun GroceryListContent(
                             item = item,
                             onToggle = { onToggleItem(item.id) },
                             onItemClick = { onStartRenameItem(item) },
-                            onDelete = { onDelete(item.id) },
+                            onDelete = { onDeleteItem(item.id) },
                         )
                     }
 
@@ -241,7 +237,12 @@ fun GroceryListContent(
                             value = textValue,
                             onValueChange = { textValue = it },
                             modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp),
-                            placeholder = { Text(stringResource(Res.string.add_item_placeholder), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)) },
+                            placeholder = {
+                                Text(
+                                    stringResource(Res.string.add_item_placeholder),
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                )
+                            },
                             singleLine = true,
                             colors =
                                 TextFieldDefaults.colors(
@@ -272,7 +273,12 @@ fun GroceryListContent(
                         value = groupText,
                         onValueChange = { groupText = it },
                         modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 2.dp),
-                        placeholder = { Text(stringResource(Res.string.add_group_placeholder), color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)) },
+                        placeholder = {
+                            Text(
+                                stringResource(Res.string.add_group_placeholder),
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                            )
+                        },
                         singleLine = true,
                         colors =
                             TextFieldDefaults.colors(
@@ -301,7 +307,7 @@ fun GroceryListContent(
 
 @Composable
 fun UndoBanner(
-    deletedItemName: String,
+    deletedName: String,
     onUndo: () -> Unit,
 ) {
     Surface(
@@ -315,7 +321,7 @@ fun UndoBanner(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = stringResource(Res.string.deleted_item, deletedItemName),
+                text = "Excluído \"$deletedName\"",
                 color = MaterialTheme.colorScheme.inverseOnSurface,
             )
             TextButton(onClick = onUndo) {
@@ -357,6 +363,7 @@ fun GroceryGroupHeader(
     itemCount: Int,
     onHeaderClick: () -> Unit,
     onRenameClick: () -> Unit,
+    onDeleteGroup: () -> Unit,
 ) {
     val categoryColors =
         listOf(
@@ -408,8 +415,24 @@ fun GroceryGroupHeader(
                 )
             }
 
-            TextButton(onClick = onRenameClick) {
-                Text(stringResource(Res.string.rename), color = categoryContentColors[colorIndex])
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(0.dp),
+            ) {
+                TextButton(onClick = onRenameClick) {
+                    Text(stringResource(Res.string.rename), color = categoryContentColors[colorIndex])
+                }
+                TextButton(
+                    onClick = onDeleteGroup,
+                    modifier = Modifier.size(32.dp),
+                ) {
+                    Text(
+                        text = "✕",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = categoryContentColors[colorIndex],
+                    )
+                }
             }
         }
     }
