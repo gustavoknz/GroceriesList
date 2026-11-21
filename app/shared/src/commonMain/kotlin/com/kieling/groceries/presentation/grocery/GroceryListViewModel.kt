@@ -34,8 +34,6 @@ class GroceryListViewModel(
     private val renameGroupUseCase: RenameGroupUseCase,
     private val groceryRepository: GroceryRepository,
 ) : ViewModel() {
-    private val newItemNameFlow = MutableStateFlow("")
-    private val newItemGroupFlow = MutableStateFlow("")
     private val deletedItemFlow = MutableStateFlow<GroceryItem?>(null)
 
     private val baseUiState: StateFlow<GroceryListUiState> =
@@ -43,9 +41,7 @@ class GroceryListViewModel(
             observeCurrentUserUseCase(),
             getGroceryItemsUseCase(),
             groceryRepository.categoryOrder,
-            newItemNameFlow,
-            newItemGroupFlow,
-        ) { user: AuthUser?, items: List<GroceryItem>, categoryOrder: List<String>, newItemName: String, newItemGroup: String ->
+        ) { user: AuthUser?, items: List<GroceryItem>, categoryOrder: List<String> ->
             val uiItems = items.map { it.toUi() }
             val groupedItems = items.groupBy { it.group.ifBlank { "General" } }
             val allGroupNames = (categoryOrder + groupedItems.keys).distinct()
@@ -64,8 +60,6 @@ class GroceryListViewModel(
                 currentUser = user?.toUi(),
                 items = uiItems.toImmutableList(),
                 groups = groups,
-                newItemName = newItemName,
-                newItemGroup = newItemGroup,
             )
         }.stateIn(
             scope = viewModelScope,
@@ -81,25 +75,6 @@ class GroceryListViewModel(
             started = SharingStarted.Eagerly,
             initialValue = GroceryListUiState(),
         )
-
-    fun updateNewItemName(name: String) {
-        newItemNameFlow.value = name
-    }
-
-    fun updateNewItemGroup(group: String) {
-        newItemGroupFlow.value = group
-    }
-
-    fun addItem(group: String? = null) {
-        val name = newItemNameFlow.value.trim()
-        val targetGroup = (group ?: newItemGroupFlow.value).trim().ifBlank { "General" }
-        if (name.isNotBlank()) {
-            viewModelScope.launch {
-                addGroceryItemUseCase(name, targetGroup)
-                newItemNameFlow.value = ""
-            }
-        }
-    }
 
     fun toggleItem(id: Int) {
         viewModelScope.launch {
@@ -148,6 +123,31 @@ class GroceryListViewModel(
         if (trimmed.isNotBlank() && (trimmed != oldName)) {
             viewModelScope.launch {
                 renameGroupUseCase(oldName, trimmed)
+            }
+        }
+    }
+
+    fun renameItem(
+        id: Int,
+        newName: String,
+    ) {
+        val trimmed = newName.trim()
+        if (trimmed.isNotBlank()) {
+            viewModelScope.launch {
+                groceryRepository.renameItem(id, trimmed)
+            }
+        }
+    }
+
+    fun addItemToGroup(
+        groupName: String,
+        itemName: String,
+    ) {
+        val trimmed = itemName.trim()
+        val targetGroup = groupName.trim().ifBlank { "General" }
+        if (trimmed.isNotBlank()) {
+            viewModelScope.launch {
+                addGroceryItemUseCase(trimmed, targetGroup)
             }
         }
     }

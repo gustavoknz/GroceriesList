@@ -47,7 +47,8 @@ import com.kieling.groceries.presentation.auth.LoginScreen
 import com.kieling.groceries.presentation.model.GroceryGroupUi
 import com.kieling.groceries.presentation.model.GroceryItemUi
 import grocerieslist.app.shared.generated.resources.Res
-import grocerieslist.app.shared.generated.resources.add
+import grocerieslist.app.shared.generated.resources.add_group_placeholder
+import grocerieslist.app.shared.generated.resources.add_item_placeholder
 import grocerieslist.app.shared.generated.resources.added_by
 import grocerieslist.app.shared.generated.resources.cancel
 import grocerieslist.app.shared.generated.resources.delete
@@ -55,11 +56,11 @@ import grocerieslist.app.shared.generated.resources.deleted_item
 import grocerieslist.app.shared.generated.resources.empty_list_subtitle
 import grocerieslist.app.shared.generated.resources.empty_list_title
 import grocerieslist.app.shared.generated.resources.groceries_list
-import grocerieslist.app.shared.generated.resources.group_hint
 import grocerieslist.app.shared.generated.resources.group_name_label
-import grocerieslist.app.shared.generated.resources.item_name_hint
+import grocerieslist.app.shared.generated.resources.item_name_label
 import grocerieslist.app.shared.generated.resources.rename
 import grocerieslist.app.shared.generated.resources.rename_group_title
+import grocerieslist.app.shared.generated.resources.rename_item_title
 import grocerieslist.app.shared.generated.resources.save
 import grocerieslist.app.shared.generated.resources.sign_out
 import grocerieslist.app.shared.generated.resources.undo
@@ -77,6 +78,7 @@ fun GroceryListScreen(
     val uiState by groceryViewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     var groupBeingRenamed by remember { mutableStateOf<String?>(null) }
+    var itemBeingRenamed by remember { mutableStateOf<GroceryItemUi?>(null) }
     var renameText by remember { mutableStateOf("") }
 
     if (groupBeingRenamed != null) {
@@ -89,6 +91,20 @@ fun GroceryListScreen(
                     groceryViewModel.renameGroup(oldName, newName)
                 }
                 groupBeingRenamed = null
+            },
+        )
+    }
+
+    if (itemBeingRenamed != null) {
+        RenameItemDialog(
+            itemName = itemBeingRenamed!!.name,
+            initialRenameText = itemBeingRenamed!!.name,
+            onDismiss = { itemBeingRenamed = null },
+            onSave = { newName ->
+                itemBeingRenamed?.let { item ->
+                    groceryViewModel.renameItem(item.id, newName)
+                }
+                itemBeingRenamed = null
             },
         )
     }
@@ -126,17 +142,23 @@ fun GroceryListScreen(
             GroceryListContent(
                 uiState = uiState,
                 modifier = Modifier.padding(paddingValues),
-                onUpdateItemName = { groceryViewModel.updateNewItemName(it) },
-                onUpdateItemGroup = { groceryViewModel.updateNewItemGroup(it) },
-                onAddItem = { groceryViewModel.addItem() },
                 onUndoDelete = { groceryViewModel.undoDelete() },
                 onToggleItem = { groceryViewModel.toggleItem(it) },
                 onIncrement = { groceryViewModel.incrementQuantity(it) },
                 onDecrement = { groceryViewModel.decrementQuantity(it) },
                 onDelete = { groceryViewModel.deleteItem(it) },
-                onStartRename = { groupName ->
+                onStartRenameGroup = { groupName ->
                     groupBeingRenamed = groupName
                     renameText = groupName
+                },
+                onStartRenameItem = { item ->
+                    itemBeingRenamed = item
+                },
+                onAddItemToGroup = { groupName, itemName ->
+                    groceryViewModel.addItemToGroup(groupName, itemName)
+                },
+                onAddGroup = { groupName ->
+                    groceryViewModel.addCategory(groupName)
                 },
             )
         }
@@ -147,15 +169,15 @@ fun GroceryListScreen(
 fun GroceryListContent(
     uiState: GroceryListUiState,
     modifier: Modifier = Modifier,
-    onUpdateItemName: (String) -> Unit = {},
-    onUpdateItemGroup: (String) -> Unit = {},
-    onAddItem: () -> Unit = {},
     onUndoDelete: () -> Unit = {},
     onToggleItem: (Int) -> Unit = {},
     onIncrement: (Int) -> Unit = {},
     onDecrement: (Int) -> Unit = {},
     onDelete: (Int) -> Unit = {},
-    onStartRename: (String) -> Unit = {},
+    onStartRenameGroup: (String) -> Unit = {},
+    onStartRenameItem: (GroceryItemUi) -> Unit = {},
+    onAddItemToGroup: (String, String) -> Unit = { _, _ -> },
+    onAddGroup: (String) -> Unit = {},
 ) {
     Column(
         modifier =
@@ -175,14 +197,6 @@ fun GroceryListContent(
                     .padding(bottom = 12.dp),
         )
 
-        QuickAddCard(
-            newItemName = uiState.newItemName,
-            newItemGroup = uiState.newItemGroup,
-            onItemNameChange = onUpdateItemName,
-            onItemGroupChange = onUpdateItemGroup,
-            onAddClick = onAddItem,
-        )
-
         if (uiState.lastDeletedItemName != null) {
             Spacer(modifier = Modifier.height(8.dp))
             UndoBanner(
@@ -191,9 +205,9 @@ fun GroceryListContent(
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        if (uiState.items.isEmpty()) {
+        if (uiState.items.isEmpty() && uiState.groups.isEmpty()) {
             EmptyGroceryState(modifier = Modifier.fillMaxWidth().weight(1f))
         } else {
             LazyColumn(
@@ -208,7 +222,8 @@ fun GroceryListContent(
                         GroceryGroupHeader(
                             groupName = group.name,
                             itemCount = group.items.size,
-                            onRenameClick = { onStartRename(group.name) },
+                            onHeaderClick = { onStartRenameGroup(group.name) },
+                            onRenameClick = { onStartRenameGroup(group.name) },
                         )
                     }
 
@@ -216,55 +231,57 @@ fun GroceryListContent(
                         GroceryItemCard(
                             item = item,
                             onToggle = { onToggleItem(item.id) },
+                            onItemClick = { onStartRenameItem(item) },
                             onIncrement = { onIncrement(item.id) },
                             onDecrement = { onDecrement(item.id) },
                             onDelete = { onDelete(item.id) },
                         )
                     }
-                }
-            }
-        }
-    }
-}
 
-@Composable
-fun QuickAddCard(
-    newItemName: String,
-    newItemGroup: String,
-    onItemNameChange: (String) -> Unit,
-    onItemGroupChange: (String) -> Unit,
-    onAddClick: () -> Unit,
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            OutlinedTextField(
-                value = newItemName,
-                onValueChange = onItemNameChange,
-                modifier = Modifier.weight(1.3f),
-                placeholder = { Text(stringResource(Res.string.item_name_hint)) },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { onAddClick() }),
-            )
-            OutlinedTextField(
-                value = newItemGroup,
-                onValueChange = onItemGroupChange,
-                modifier = Modifier.weight(1f),
-                placeholder = { Text(stringResource(Res.string.group_hint)) },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { onAddClick() }),
-            )
-            Button(onClick = onAddClick) {
-                Text(stringResource(Res.string.add))
+                    // Last item of each group: placeholder to add an item
+                    item(key = "add_item_to_${group.name}") {
+                        var textValue by remember(group.name) { mutableStateOf("") }
+                        OutlinedTextField(
+                            value = textValue,
+                            onValueChange = { textValue = it },
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                            placeholder = { Text(stringResource(Res.string.add_item_placeholder)) },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            keyboardActions =
+                                KeyboardActions(
+                                    onDone = {
+                                        if (textValue.isNotBlank()) {
+                                            onAddItemToGroup(group.name, textValue)
+                                            textValue = ""
+                                        }
+                                    },
+                                ),
+                        )
+                    }
+                }
+
+                // Last item in the list: placeholder to add a group
+                item(key = "add_group_placeholder") {
+                    var groupText by remember { mutableStateOf("") }
+                    OutlinedTextField(
+                        value = groupText,
+                        onValueChange = { groupText = it },
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp),
+                        placeholder = { Text(stringResource(Res.string.add_group_placeholder)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions =
+                            KeyboardActions(
+                                onDone = {
+                                    if (groupText.isNotBlank()) {
+                                        onAddGroup(groupText)
+                                        groupText = ""
+                                    }
+                                },
+                            ),
+                    )
+                }
             }
         }
     }
@@ -326,6 +343,7 @@ fun EmptyGroceryState(modifier: Modifier = Modifier) {
 fun GroceryGroupHeader(
     groupName: String,
     itemCount: Int,
+    onHeaderClick: () -> Unit,
     onRenameClick: () -> Unit,
 ) {
     val categoryColors =
@@ -347,7 +365,11 @@ fun GroceryGroupHeader(
     Surface(
         color = categoryColors[colorIndex],
         shape = MaterialTheme.shapes.small,
-        modifier = Modifier.fillMaxWidth().padding(top = 3.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 3.dp)
+                .clickable(onClick = onHeaderClick),
     ) {
         Row(
             modifier =
@@ -385,15 +407,13 @@ fun GroceryGroupHeader(
 fun GroceryItemCard(
     item: GroceryItemUi,
     onToggle: () -> Unit,
+    onItemClick: () -> Unit,
     onIncrement: () -> Unit,
     onDecrement: () -> Unit,
     onDelete: () -> Unit,
 ) {
     Card(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onToggle),
+        modifier = Modifier.fillMaxWidth(),
         colors =
             CardDefaults.cardColors(
                 containerColor =
@@ -421,7 +441,12 @@ fun GroceryItemCard(
                     checked = item.isChecked,
                     onCheckedChange = { _ -> onToggle() },
                 )
-                Column {
+                Column(
+                    modifier =
+                        Modifier
+                            .clickable(onClick = onItemClick)
+                            .padding(vertical = 4.dp),
+                ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -526,6 +551,42 @@ fun RenameGroupDialog(
     )
 }
 
+@Composable
+fun RenameItemDialog(
+    itemName: String,
+    initialRenameText: String,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit,
+) {
+    var renameText by remember { mutableStateOf(initialRenameText) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("${stringResource(Res.string.rename_item_title)}: $itemName") },
+        text = {
+            OutlinedTextField(
+                value = renameText,
+                onValueChange = { renameText = it },
+                label = { Text(stringResource(Res.string.item_name_label)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = { onSave(renameText) },
+                enabled = renameText.isNotBlank(),
+            ) {
+                Text(stringResource(Res.string.save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(Res.string.cancel))
+            }
+        },
+    )
+}
+
 @Preview
 @Composable
 fun GroceryListContentPreview() {
@@ -543,37 +604,8 @@ fun GroceryListContentPreview() {
                                         GroceryItemUi(2, "Bananas", true, "Produce", 1, ""),
                                     ),
                             ),
-                            GroceryGroupUi(
-                                name = "Dairy",
-                                items =
-                                    persistentListOf(
-                                        GroceryItemUi(3, "Milk", false, "Dairy", 1, "Me"),
-                                    ),
-                            ),
                         ),
                 ),
-        )
-    }
-}
-
-@Preview
-@Composable
-fun EmptyGroceryStatePreview() {
-    MaterialTheme {
-        EmptyGroceryState()
-    }
-}
-
-@Preview
-@Composable
-fun QuickAddCardPreview() {
-    MaterialTheme {
-        QuickAddCard(
-            newItemName = "Coffee",
-            newItemGroup = "Beverages",
-            onItemNameChange = {},
-            onItemGroupChange = {},
-            onAddClick = {},
         )
     }
 }

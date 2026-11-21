@@ -3,6 +3,7 @@ package com.kieling.groceries
 import com.kieling.groceries.domain.model.GroceryItem
 import com.kieling.groceries.model.AddItemRequest
 import com.kieling.groceries.model.RenameGroupRequest
+import com.kieling.groceries.model.RenameItemRequest
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.http.content.staticResources
 import io.ktor.server.request.receive
@@ -164,6 +165,21 @@ fun Route.groceryRoutes() {
                     if (index != -1) {
                         val item = list[index]
                         list[index] = item.copy(isChecked = !item.isChecked)
+                    }
+                }
+            }
+        call.respond(updated)
+    }
+    put("/items/{id}/rename") {
+        val id = call.parameters["id"]?.toIntOrNull()
+        val request = call.receive<RenameItemRequest>()
+        val trimmed = request.newName.trim()
+        val updated =
+            call.updateUserItems { list ->
+                if (id != null && trimmed.isNotBlank()) {
+                    val index = list.indexOfFirst { it.id == id }
+                    if (index != -1) {
+                        list[index] = list[index].copy(name = trimmed)
                     }
                 }
             }

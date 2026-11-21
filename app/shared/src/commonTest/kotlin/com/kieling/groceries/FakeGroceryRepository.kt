@@ -110,4 +110,17 @@ class FakeGroceryRepository : GroceryRepository {
         _items.value =
             _items.value.map { if (it.group == oldName) it.copy(group = trimmed) else it }
     }
+
+    override suspend fun renameItem(
+        id: Int,
+        newName: String,
+    ) {
+        val trimmed = newName.trim()
+        if (trimmed.isNotBlank()) {
+            _items.value =
+                _items.value.map {
+                    if (it.id == id) it.copy(name = trimmed) else it
+                }
+        }
+    }
 }

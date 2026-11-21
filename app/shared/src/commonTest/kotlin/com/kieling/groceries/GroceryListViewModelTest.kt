@@ -63,14 +63,11 @@ class GroceryListViewModelTest {
     @Test
     fun testAddGroceryItem() =
         runTest {
-            viewModel.updateNewItemName("Bananas")
-            viewModel.updateNewItemGroup("Produce")
-            viewModel.addItem()
+            viewModel.addItemToGroup("Produce", "Bananas")
             advanceUntilIdle()
 
             val items = viewModel.uiState.value.items
             assertTrue(items.any { it.name == "Bananas" && it.group == "Produce" })
-            assertEquals("", viewModel.uiState.value.newItemName)
 
             val groups = viewModel.uiState.value.groups
             assertTrue(groups.any { it.name == "Produce" })
@@ -79,15 +76,11 @@ class GroceryListViewModelTest {
     @Test
     fun testAddGroceryItemCaseInsensitiveAndTrimmed() =
         runTest {
-            viewModel.updateNewItemName("  coffee  ")
-            viewModel.updateNewItemGroup("Beverages")
-            viewModel.addItem()
+            viewModel.addItemToGroup("Beverages", "  coffee  ")
             advanceUntilIdle()
 
             // Add duplicate with different casing and spaces: " COFFEE "
-            viewModel.updateNewItemName(" COFFEE ")
-            viewModel.updateNewItemGroup("Beverages")
-            viewModel.addItem()
+            viewModel.addItemToGroup("Beverages", " COFFEE ")
             advanceUntilIdle()
 
             val items = viewModel.uiState.value.items
@@ -99,9 +92,7 @@ class GroceryListViewModelTest {
     @Test
     fun testRenameGroup() =
         runTest {
-            viewModel.updateNewItemName("Carrots")
-            viewModel.updateNewItemGroup("Veg")
-            viewModel.addItem()
+            viewModel.addItemToGroup("Veg", "Carrots")
             advanceUntilIdle()
 
             viewModel.renameGroup("Veg", "Vegetables")

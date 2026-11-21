@@ -42,6 +42,11 @@ data class RenameGroupRequest(
     val newName: String,
 )
 
+@Serializable
+data class RenameItemRequest(
+    val newName: String,
+)
+
 class GroceryRepositoryImpl(
     private val client: HttpClient,
     private val authRepository: AuthRepository,
@@ -52,7 +57,7 @@ class GroceryRepositoryImpl(
     private val _items = MutableStateFlow<List<GroceryItem>>(emptyList())
     override val items: StateFlow<List<GroceryItem>> = _items.asStateFlow()
 
-    private val _categoryOrder = MutableStateFlow<List<String>>(listOf("Fruits", "Dairy", "Bakery", "Beverages", "General"))
+    private val _categoryOrder = MutableStateFlow(listOf("Fruits", "Dairy", "Bakery", "Beverages", "General"))
     override val categoryOrder: StateFlow<List<String>> = _categoryOrder.asStateFlow()
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -290,6 +295,25 @@ class GroceryRepositoryImpl(
             _items.value = updated
         } catch (e: Exception) {
             Logger.e(tag, "Error renaming group: $oldName -> $newName", e)
+        }
+    }
+
+    override suspend fun renameItem(
+        id: Int,
+        newName: String,
+    ) {
+        try {
+            val updated =
+                client
+                    .put("$baseUrl/items/$id/rename") {
+                        header("X-User-Id", getUserId())
+                        contentType(ContentType.Application.Json)
+                        setBody(RenameItemRequest(newName))
+                    }.body<List<GroceryItemDto>>()
+                    .map { it.toDomain() }
+            _items.value = updated
+        } catch (e: Exception) {
+            Logger.e(tag, "Error renaming item: $id -> $newName", e)
         }
     }
 }

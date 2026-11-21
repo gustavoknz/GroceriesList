@@ -32,4 +32,9 @@ interface GroceryRepository {
         oldName: String,
         newName: String,
     )
+
+    suspend fun renameItem(
+        id: Int,
+        newName: String,
+    )
 }
