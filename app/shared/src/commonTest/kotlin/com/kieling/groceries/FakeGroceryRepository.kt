@@ -28,7 +28,7 @@ class FakeGroceryRepository : GroceryRepository {
     override suspend fun addCategory(name: String) {
         val trimmed = name.trim()
         if (trimmed.isNotBlank() && !_categoryOrder.value.contains(trimmed)) {
-            _categoryOrder.value = _categoryOrder.value + trimmed
+            _categoryOrder.value += trimmed
         }
     }
 
@@ -44,7 +44,7 @@ class FakeGroceryRepository : GroceryRepository {
         val normalizedName = trimmedName.lowercase()
         val targetGroup = group.trim().ifBlank { "General" }
         if (!_categoryOrder.value.contains(targetGroup)) {
-            _categoryOrder.value = _categoryOrder.value + targetGroup
+            _categoryOrder.value += targetGroup
         }
         val current = _items.value
         val existingIndex =

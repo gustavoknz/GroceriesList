@@ -141,7 +141,7 @@ class GroceryRepositoryImpl(
 
         // Optimistic update
         if (!_categoryOrder.value.contains(trimmed)) {
-            _categoryOrder.value = _categoryOrder.value + trimmed
+            _categoryOrder.value += trimmed
         }
 
         try {
@@ -218,7 +218,7 @@ class GroceryRepositoryImpl(
 
         val current = _items.value
         val userId = getUserId()
-        val existingIndex = current.indexOfFirst { it.name.trim().lowercase() == trimmed.lowercase() && it.group == targetGroup }
+        val existingIndex = current.indexOfFirst { it.name.trim().equals(trimmed, ignoreCase = true) && it.group == targetGroup }
         val optimisticList =
             if (existingIndex != -1) {
                 current.mapIndexed { index, item ->
