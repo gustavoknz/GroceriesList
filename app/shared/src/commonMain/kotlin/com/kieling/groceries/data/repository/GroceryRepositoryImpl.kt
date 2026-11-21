@@ -136,21 +136,30 @@ class GroceryRepositoryImpl(
     }
 
     override suspend fun addCategory(name: String) {
+        val trimmed = name.trim()
+        if (trimmed.isBlank()) return
+
+        // Optimistic update
+        if (!_categoryOrder.value.contains(trimmed)) {
+            _categoryOrder.value = _categoryOrder.value + trimmed
+        }
+
         try {
             val updated =
                 client
                     .post("$baseUrl/categories") {
                         header("X-User-Id", getUserId())
                         contentType(ContentType.Application.Json)
-                        setBody(mapOf("name" to name))
+                        setBody(mapOf("name" to trimmed))
                     }.body<List<String>>()
             _categoryOrder.value = updated
         } catch (e: Exception) {
-            Logger.e(tag, "Error adding category: $name", e)
+            Logger.e(tag, "Error adding category: $trimmed", e)
         }
     }
 
     override suspend fun reorderCategories(newOrder: List<String>) {
+        _categoryOrder.value = newOrder
         try {
             val updated =
                 client
@@ -203,22 +212,43 @@ class GroceryRepositoryImpl(
         name: String,
         group: String,
     ) {
+        val trimmed = name.trim()
+        val targetGroup = group.trim().ifBlank { "General" }
+        if (trimmed.isBlank()) return
+
+        val current = _items.value
+        val userId = getUserId()
+        val existingIndex = current.indexOfFirst { it.name.trim().lowercase() == trimmed.lowercase() && it.group == targetGroup }
+        val optimisticList =
+            if (existingIndex != -1) {
+                current.mapIndexed { index, item ->
+                    if (index == existingIndex) item.copy(name = trimmed, isChecked = false, addedBy = userId) else item
+                }
+            } else {
+                val newId = (current.maxOfOrNull { it.id } ?: 0) + 1
+                current + GroceryItem(id = newId, name = trimmed, group = targetGroup, addedBy = userId)
+            }
+        _items.value = optimisticList
+
         try {
             val updated =
                 client
                     .post("$baseUrl/items") {
-                        header("X-User-Id", getUserId())
+                        header("X-User-Id", userId)
                         contentType(ContentType.Application.Json)
-                        setBody(AddItemRequest(name, group))
+                        setBody(AddItemRequest(trimmed, targetGroup))
                     }.body<List<GroceryItemDto>>()
                     .map { it.toDomain() }
             _items.value = updated
         } catch (e: Exception) {
-            Logger.e(tag, "Error adding item: $name", e)
+            Logger.e(tag, "Error adding item: $trimmed", e)
         }
     }
 
     override suspend fun toggleItem(id: Int) {
+        val current = _items.value
+        _items.value = current.map { if (it.id == id) it.copy(isChecked = !it.isChecked) else it }
+
         try {
             val updated =
                 client
@@ -233,6 +263,9 @@ class GroceryRepositoryImpl(
     }
 
     override suspend fun deleteItem(id: Int) {
+        val current = _items.value
+        _items.value = current.filter { it.id != id }
+
         try {
             val updated =
                 client
@@ -242,11 +275,7 @@ class GroceryRepositoryImpl(
                     .map { it.toDomain() }
             _items.value = updated
         } catch (e: Exception) {
-            Logger.e(
-                tag,
-                "Error deleting item: $id",
-                e,
-            )
+            Logger.e(tag, "Error deleting item: $id", e)
         }
     }
 
@@ -254,18 +283,21 @@ class GroceryRepositoryImpl(
         oldName: String,
         newName: String,
     ) {
+        val trimmed = newName.trim()
+        if (trimmed.isBlank()) return
+
         try {
             val updated =
                 client
                     .put("$baseUrl/groups/rename") {
                         header("X-User-Id", getUserId())
                         contentType(ContentType.Application.Json)
-                        setBody(RenameGroupRequest(oldName, newName))
+                        setBody(RenameGroupRequest(oldName, trimmed))
                     }.body<List<GroceryItemDto>>()
                     .map { it.toDomain() }
             _items.value = updated
         } catch (e: Exception) {
-            Logger.e(tag, "Error renaming group: $oldName -> $newName", e)
+            Logger.e(tag, "Error renaming group: $oldName -> $trimmed", e)
         }
     }
 
@@ -273,18 +305,24 @@ class GroceryRepositoryImpl(
         id: Int,
         newName: String,
     ) {
+        val trimmed = newName.trim()
+        if (trimmed.isBlank()) return
+
+        val current = _items.value
+        _items.value = current.map { if (it.id == id) it.copy(name = trimmed) else it }
+
         try {
             val updated =
                 client
                     .put("$baseUrl/items/$id/rename") {
                         header("X-User-Id", getUserId())
                         contentType(ContentType.Application.Json)
-                        setBody(RenameItemRequest(newName))
+                        setBody(RenameItemRequest(trimmed))
                     }.body<List<GroceryItemDto>>()
                     .map { it.toDomain() }
             _items.value = updated
         } catch (e: Exception) {
-            Logger.e(tag, "Error renaming item: $id -> $newName", e)
+            Logger.e(tag, "Error renaming item: $id -> $trimmed", e)
         }
     }
 }

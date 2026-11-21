@@ -67,7 +67,6 @@ import grocerieslist.app.shared.generated.resources.rename_item_title
 import grocerieslist.app.shared.generated.resources.save
 import grocerieslist.app.shared.generated.resources.sign_out
 import grocerieslist.app.shared.generated.resources.undo
-import grocerieslist.app.shared.generated.resources.welcome_user
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -187,7 +186,7 @@ fun GroceryListContent(
     ) {
         val userName = uiState.currentUser?.displayName ?: uiState.currentUser?.email ?: "Usuário"
         Text(
-            text = stringResource(Res.string.welcome_user, userName),
+            text = "Bem-vindo(a), $userName!",
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary,
             modifier =
