@@ -19,12 +19,15 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -35,6 +38,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
@@ -51,7 +55,6 @@ import grocerieslist.app.shared.generated.resources.add_group_placeholder
 import grocerieslist.app.shared.generated.resources.add_item_placeholder
 import grocerieslist.app.shared.generated.resources.added_by
 import grocerieslist.app.shared.generated.resources.cancel
-import grocerieslist.app.shared.generated.resources.delete
 import grocerieslist.app.shared.generated.resources.deleted_item
 import grocerieslist.app.shared.generated.resources.empty_list_subtitle
 import grocerieslist.app.shared.generated.resources.empty_list_title
@@ -144,8 +147,6 @@ fun GroceryListScreen(
                 modifier = Modifier.padding(paddingValues),
                 onUndoDelete = { groceryViewModel.undoDelete() },
                 onToggleItem = { groceryViewModel.toggleItem(it) },
-                onIncrement = { groceryViewModel.incrementQuantity(it) },
-                onDecrement = { groceryViewModel.decrementQuantity(it) },
                 onDelete = { groceryViewModel.deleteItem(it) },
                 onStartRenameGroup = { groupName ->
                     groupBeingRenamed = groupName
@@ -171,8 +172,6 @@ fun GroceryListContent(
     modifier: Modifier = Modifier,
     onUndoDelete: () -> Unit = {},
     onToggleItem: (Int) -> Unit = {},
-    onIncrement: (Int) -> Unit = {},
-    onDecrement: (Int) -> Unit = {},
     onDelete: (Int) -> Unit = {},
     onStartRenameGroup: (String) -> Unit = {},
     onStartRenameItem: (GroceryItemUi) -> Unit = {},
@@ -194,18 +193,18 @@ fun GroceryListContent(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 12.dp),
+                    .padding(bottom = 8.dp),
         )
 
         if (uiState.lastDeletedItemName != null) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             UndoBanner(
                 deletedItemName = uiState.lastDeletedItemName,
                 onUndo = onUndoDelete,
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         if (uiState.items.isEmpty() && uiState.groups.isEmpty()) {
             EmptyGroceryState(modifier = Modifier.fillMaxWidth().weight(1f))
@@ -215,7 +214,7 @@ fun GroceryListContent(
                     Modifier
                         .fillMaxWidth()
                         .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
+                verticalArrangement = Arrangement.spacedBy(1.dp),
             ) {
                 uiState.groups.forEach { group ->
                     item(key = "group_header_${group.name}") {
@@ -232,21 +231,27 @@ fun GroceryListContent(
                             item = item,
                             onToggle = { onToggleItem(item.id) },
                             onItemClick = { onStartRenameItem(item) },
-                            onIncrement = { onIncrement(item.id) },
-                            onDecrement = { onDecrement(item.id) },
                             onDelete = { onDelete(item.id) },
                         )
                     }
 
-                    // Last item of each group: placeholder to add an item
+                    // Last item of each group: borderless placeholder to add an item
                     item(key = "add_item_to_${group.name}") {
                         var textValue by remember(group.name) { mutableStateOf("") }
-                        OutlinedTextField(
+                        TextField(
                             value = textValue,
                             onValueChange = { textValue = it },
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                            placeholder = { Text(stringResource(Res.string.add_item_placeholder)) },
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp),
+                            placeholder = { Text(stringResource(Res.string.add_item_placeholder), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)) },
                             singleLine = true,
+                            colors =
+                                TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    disabledContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                ),
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions =
                                 KeyboardActions(
@@ -261,15 +266,23 @@ fun GroceryListContent(
                     }
                 }
 
-                // Last item in the list: placeholder to add a group
+                // Last item in the list: borderless placeholder to add a group
                 item(key = "add_group_placeholder") {
                     var groupText by remember { mutableStateOf("") }
-                    OutlinedTextField(
+                    TextField(
                         value = groupText,
                         onValueChange = { groupText = it },
-                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp),
-                        placeholder = { Text(stringResource(Res.string.add_group_placeholder)) },
+                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 2.dp),
+                        placeholder = { Text(stringResource(Res.string.add_group_placeholder), color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)) },
                         singleLine = true,
+                        colors =
+                            TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                disabledContainerColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                            ),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions =
                             KeyboardActions(
@@ -298,7 +311,7 @@ fun UndoBanner(
         shape = MaterialTheme.shapes.small,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -368,7 +381,7 @@ fun GroceryGroupHeader(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(top = 3.dp)
+                .padding(top = 2.dp)
                 .clickable(onClick = onHeaderClick),
     ) {
         Row(
@@ -408,8 +421,6 @@ fun GroceryItemCard(
     item: GroceryItemUi,
     onToggle: () -> Unit,
     onItemClick: () -> Unit,
-    onIncrement: () -> Unit,
-    onDecrement: () -> Unit,
     onDelete: () -> Unit,
 ) {
     Card(
@@ -428,14 +439,14 @@ fun GroceryItemCard(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                    .padding(horizontal = 12.dp, vertical = 2.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth(0.68f),
+                modifier = Modifier.weight(1f),
             ) {
                 Checkbox(
                     checked = item.isChecked,
@@ -445,37 +456,19 @@ fun GroceryItemCard(
                     modifier =
                         Modifier
                             .clickable(onClick = onItemClick)
-                            .padding(vertical = 4.dp),
+                            .padding(vertical = 2.dp),
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        Text(
-                            text = item.name,
-                            style = MaterialTheme.typography.bodyLarge,
-                            textDecoration = if (item.isChecked) TextDecoration.LineThrough else TextDecoration.None,
-                            color =
-                                if (item.isChecked) {
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface
-                                },
-                        )
-                        if (item.quantity > 1) {
-                            Surface(
-                                color = MaterialTheme.colorScheme.primaryContainer,
-                                shape = MaterialTheme.shapes.extraSmall,
-                            ) {
-                                Text(
-                                    text = "${item.quantity}x",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                )
-                            }
-                        }
-                    }
+                    Text(
+                        text = item.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        textDecoration = if (item.isChecked) TextDecoration.LineThrough else TextDecoration.None,
+                        color =
+                            if (item.isChecked) {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
+                    )
                     if (item.addedBy.isNotBlank()) {
                         Text(
                             text = stringResource(Res.string.added_by, item.addedBy),
@@ -486,30 +479,16 @@ fun GroceryItemCard(
                 }
             }
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(0.dp),
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier.size(32.dp),
             ) {
-                TextButton(
-                    onClick = onDecrement,
-                    modifier = Modifier.size(28.dp),
-                ) {
-                    Text("-", fontWeight = FontWeight.Bold)
-                }
                 Text(
-                    text = "${item.quantity}",
-                    style = MaterialTheme.typography.bodyMedium,
+                    text = "✕",
+                    style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
                 )
-                TextButton(
-                    onClick = onIncrement,
-                    modifier = Modifier.size(28.dp),
-                ) {
-                    Text("+", fontWeight = FontWeight.Bold)
-                }
-                TextButton(onClick = onDelete) {
-                    Text(stringResource(Res.string.delete), color = MaterialTheme.colorScheme.error)
-                }
             }
         }
     }
@@ -600,12 +579,20 @@ fun GroceryListContentPreview() {
                                 name = "Produce",
                                 items =
                                     persistentListOf(
-                                        GroceryItemUi(1, "Apples", false, "Produce", 2, "Partner"),
-                                        GroceryItemUi(2, "Bananas", true, "Produce", 1, ""),
+                                        GroceryItemUi(1, "Apples", false, "Produce", "Partner"),
+                                        GroceryItemUi(2, "Bananas", true, "Produce", ""),
                                     ),
                             ),
                         ),
                 ),
         )
+    }
+}
+
+@Preview
+@Composable
+fun EmptyGroceryStatePreview() {
+    MaterialTheme {
+        EmptyGroceryState()
     }
 }

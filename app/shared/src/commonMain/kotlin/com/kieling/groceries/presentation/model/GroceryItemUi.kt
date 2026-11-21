@@ -12,7 +12,6 @@ data class GroceryItemUi(
     val name: String,
     val isChecked: Boolean,
     val group: String,
-    val quantity: Int = 1,
     val addedBy: String = "",
 )
 
@@ -28,7 +27,6 @@ fun GroceryItem.toUi(): GroceryItemUi =
         name = name,
         isChecked = isChecked,
         group = group,
-        quantity = quantity,
         addedBy = addedBy,
     )
 

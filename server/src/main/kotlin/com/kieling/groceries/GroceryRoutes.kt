@@ -148,10 +148,10 @@ fun Route.groceryRoutes() {
                 val existingIndex = list.indexOfFirst { it.name.trim().lowercase() == normalizedName && it.group == targetGroup }
                 if (existingIndex != -1) {
                     val existing = list[existingIndex]
-                    list[existingIndex] = existing.copy(name = trimmedName, isChecked = false)
+                    list[existingIndex] = existing.copy(name = trimmedName, isChecked = false, addedBy = userId)
                 } else {
                     val newId = (list.maxOfOrNull { it.id } ?: 0) + 1
-                    list.add(GroceryItem(id = newId, name = trimmedName, group = targetGroup))
+                    list.add(GroceryItem(id = newId, name = trimmedName, group = targetGroup, addedBy = userId))
                 }
             }
         call.respond(updated)

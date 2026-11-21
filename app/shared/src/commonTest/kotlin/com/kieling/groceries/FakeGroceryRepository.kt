@@ -55,38 +55,20 @@ class FakeGroceryRepository : GroceryRepository {
             if (existingIndex != -1) {
                 current.mapIndexed { index, item ->
                     if (index == existingIndex) {
-                        item.copy(name = trimmedName, quantity = item.quantity + 1, isChecked = false)
+                        item.copy(name = trimmedName, isChecked = false)
                     } else {
                         item
                     }
                 }
             } else {
                 val newId = (current.maxOfOrNull { it.id } ?: 0) + 1
-                val newItem = GroceryItem(newId, trimmedName, group = targetGroup, quantity = 1)
+                val newItem = GroceryItem(newId, trimmedName, group = targetGroup)
                 current + newItem
             }
     }
 
     override suspend fun toggleItem(id: Int) {
         _items.value = _items.value.map { if (it.id == id) it.copy(isChecked = !it.isChecked) else it }
-    }
-
-    override suspend fun incrementQuantity(id: Int) {
-        _items.value =
-            _items.value.map {
-                if (it.id == id) it.copy(quantity = it.quantity + 1) else it
-            }
-    }
-
-    override suspend fun decrementQuantity(id: Int) {
-        _items.value =
-            _items.value.mapNotNull { item ->
-                if (item.id == id) {
-                    if (item.quantity > 1) item.copy(quantity = item.quantity - 1) else null
-                } else {
-                    item
-                }
-            }
     }
 
     override suspend fun deleteItem(id: Int) {

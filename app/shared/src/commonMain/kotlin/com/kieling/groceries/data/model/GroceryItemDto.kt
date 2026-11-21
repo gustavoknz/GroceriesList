@@ -9,7 +9,6 @@ data class GroceryItemDto(
     val name: String,
     val isChecked: Boolean = false,
     val group: String = "General",
-    val quantity: Int = 1,
     val addedBy: String = "",
 )
 
@@ -19,7 +18,6 @@ fun GroceryItemDto.toDomain(): GroceryItem =
         name = name,
         isChecked = isChecked,
         group = group,
-        quantity = quantity,
         addedBy = addedBy,
     )
 
@@ -29,6 +27,5 @@ fun GroceryItem.toDto(): GroceryItemDto =
         name = name,
         isChecked = isChecked,
         group = group,
-        quantity = quantity,
         addedBy = addedBy,
     )
