@@ -1,6 +1,5 @@
 package com.kieling.groceries.presentation.grocery
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,11 +14,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -39,9 +41,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
@@ -58,6 +58,7 @@ import grocerieslist.app.shared.generated.resources.add_group_placeholder
 import grocerieslist.app.shared.generated.resources.add_item_placeholder
 import grocerieslist.app.shared.generated.resources.added_by
 import grocerieslist.app.shared.generated.resources.cancel
+import grocerieslist.app.shared.generated.resources.close
 import grocerieslist.app.shared.generated.resources.empty_list_subtitle
 import grocerieslist.app.shared.generated.resources.empty_list_title
 import grocerieslist.app.shared.generated.resources.group_name_label
@@ -178,23 +179,12 @@ fun CloseIcon(
     modifier: Modifier = Modifier,
     tint: Color = MaterialTheme.colorScheme.error,
 ) {
-    Canvas(modifier = modifier.size(14.dp)) {
-        val stroke = 2.dp.toPx()
-        drawLine(
-            color = tint,
-            start = Offset(0f, 0f),
-            end = Offset(size.width, size.height),
-            strokeWidth = stroke,
-            cap = StrokeCap.Round,
-        )
-        drawLine(
-            color = tint,
-            start = Offset(0f, size.height),
-            end = Offset(size.width, 0f),
-            strokeWidth = stroke,
-            cap = StrokeCap.Round,
-        )
-    }
+    Icon(
+        imageVector = Icons.Filled.Close,
+        contentDescription = stringResource(Res.string.close),
+        tint = tint,
+        modifier = modifier.size(18.dp),
+    )
 }
 
 @Composable
@@ -607,7 +597,7 @@ fun RenameItemDialog(
 
 @Preview
 @Composable
-fun GroceryListContentPreview() {
+fun ItemsContentPreview() {
     MaterialTheme {
         GroceryListContent(
             uiState =
@@ -630,8 +620,11 @@ fun GroceryListContentPreview() {
 
 @Preview
 @Composable
-fun EmptyGroceryStatePreview() {
+fun EmptyContentPreview() {
     MaterialTheme {
-        EmptyGroceryState()
+        GroceryListContent(
+            uiState =
+                GroceryListUiState(groups = persistentListOf()),
+        )
     }
 }

@@ -31,4 +31,5 @@
     <string name="add_group_placeholder">+ Adicionar grupo...</string>
     <string name="rename_item_title">Renomear Item</string>
     <string name="item_name_label">Nome do Item</string>
+    <string name="close">Fechar</string>
 </resources>
