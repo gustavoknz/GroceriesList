@@ -1,5 +1,6 @@
 package com.kieling.groceries.presentation.grocery
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,7 +39,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
@@ -167,6 +170,30 @@ fun GroceryListScreen(
                 },
             )
         }
+    }
+}
+
+@Composable
+fun CloseIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = MaterialTheme.colorScheme.error,
+) {
+    Canvas(modifier = modifier.size(14.dp)) {
+        val stroke = 2.dp.toPx()
+        drawLine(
+            color = tint,
+            start = Offset(0f, 0f),
+            end = Offset(size.width, size.height),
+            strokeWidth = stroke,
+            cap = StrokeCap.Round,
+        )
+        drawLine(
+            color = tint,
+            start = Offset(0f, size.height),
+            end = Offset(size.width, 0f),
+            strokeWidth = stroke,
+            cap = StrokeCap.Round,
+        )
     }
 }
 
@@ -422,16 +449,11 @@ fun GroceryGroupHeader(
                 TextButton(onClick = onRenameClick) {
                     Text(stringResource(Res.string.rename), color = categoryContentColors[colorIndex])
                 }
-                TextButton(
+                IconButton(
                     onClick = onDeleteGroup,
                     modifier = Modifier.size(32.dp),
                 ) {
-                    Text(
-                        text = "✕",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = categoryContentColors[colorIndex],
-                    )
+                    CloseIcon(tint = categoryContentColors[colorIndex])
                 }
             }
         }
@@ -505,12 +527,7 @@ fun GroceryItemCard(
                 onClick = onDelete,
                 modifier = Modifier.size(32.dp),
             ) {
-                Text(
-                    text = "✕",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
-                )
+                CloseIcon(tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f))
             }
         }
     }
