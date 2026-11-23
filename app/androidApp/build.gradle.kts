@@ -18,9 +18,6 @@ val googleClientId: String? = localProperties.getProperty("GOOGLE_CLIENT_ID")
 dependencies {
     implementation(project(":app:shared"))
 
-    // Import the Compose BoM
-    implementation(platform("androidx.compose:compose-bom:2025.02.00"))
-
     implementation(libs.androidx.activity.compose)
     implementation(libs.koin.core)
     implementation(libs.koin.android)

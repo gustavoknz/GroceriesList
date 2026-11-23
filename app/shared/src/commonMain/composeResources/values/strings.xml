@@ -12,11 +12,11 @@
     <string name="sign_in_with_google">Entrar com o Google</string>
     <string name="groceries_list">Lista de Compras</string>
     <string name="sign_out">Sair</string>
-    <string name="welcome_user">Bem-vindo(a), {0}!</string>
+    <string name="welcome_user">Bem-vindo(a), %s!</string>
     <string name="item_name_hint">Nome do item...</string>
     <string name="group_hint">Grupo (opcional)</string>
     <string name="add">Adicionar</string>
-    <string name="deleted_item">Excluído \"{0}\"</string>
+    <string name="deleted_item">Excluído \"%s\"</string>
     <string name="undo">Desfazer</string>
     <string name="empty_list_title">Sua lista está vazia</string>
     <string name="empty_list_subtitle">Adicione um grupo ou item abaixo para começar!</string>
@@ -26,7 +26,7 @@
     <string name="group_name_label">Nome do Grupo</string>
     <string name="save">Salvar</string>
     <string name="cancel">Cancelar</string>
-    <string name="added_by">adicionado por {0}</string>
+    <string name="added_by">adicionado por %s</string>
     <string name="add_item_placeholder">+ Adicionar item...</string>
     <string name="add_group_placeholder">+ Adicionar grupo...</string>
     <string name="rename_item_title">Renomear Item</string>
