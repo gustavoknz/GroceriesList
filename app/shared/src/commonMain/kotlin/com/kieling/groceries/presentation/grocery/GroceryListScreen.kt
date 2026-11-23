@@ -63,7 +63,6 @@ import grocerieslist.app.shared.generated.resources.empty_list_subtitle
 import grocerieslist.app.shared.generated.resources.empty_list_title
 import grocerieslist.app.shared.generated.resources.group_name_label
 import grocerieslist.app.shared.generated.resources.item_name_label
-import grocerieslist.app.shared.generated.resources.rename
 import grocerieslist.app.shared.generated.resources.rename_group_title
 import grocerieslist.app.shared.generated.resources.rename_item_title
 import grocerieslist.app.shared.generated.resources.save
@@ -233,7 +232,6 @@ fun GroceryListContent(
                             groupName = group.name,
                             itemCount = group.items.size,
                             onHeaderClick = { onStartRenameGroup(group.name) },
-                            onRenameClick = { onStartRenameGroup(group.name) },
                             onDeleteGroup = { onDeleteGroup(group.name) },
                         )
                     }
@@ -379,7 +377,6 @@ fun GroceryGroupHeader(
     groupName: String,
     itemCount: Int,
     onHeaderClick: () -> Unit,
-    onRenameClick: () -> Unit,
     onDeleteGroup: () -> Unit,
 ) {
     val categoryColors =
@@ -432,19 +429,11 @@ fun GroceryGroupHeader(
                 )
             }
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(0.dp),
+            IconButton(
+                onClick = onDeleteGroup,
+                modifier = Modifier.size(32.dp),
             ) {
-                TextButton(onClick = onRenameClick) {
-                    Text(stringResource(Res.string.rename), color = categoryContentColors[colorIndex])
-                }
-                IconButton(
-                    onClick = onDeleteGroup,
-                    modifier = Modifier.size(32.dp),
-                ) {
-                    CloseIcon(tint = categoryContentColors[colorIndex])
-                }
+                CloseIcon(tint = categoryContentColors[colorIndex])
             }
         }
     }
