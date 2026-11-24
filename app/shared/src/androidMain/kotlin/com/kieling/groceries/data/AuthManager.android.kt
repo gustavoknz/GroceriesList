@@ -10,6 +10,7 @@ import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.kieling.groceries.Logger
 import com.kieling.groceries.domain.model.AuthUser
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,8 +47,12 @@ actual class AuthManager actual constructor() {
     private val _currentUser =
         MutableStateFlow(
             try {
-                firebaseAuth?.currentUser?.let {
-                    AuthUser(it.uid, it.email, it.displayName, it.photoUrl?.toString())
+                firebaseAuth?.currentUser?.let { user ->
+                    val name =
+                        user.displayName?.takeIf { !it.isBlank() }
+                            ?: user.email?.substringBefore("@")?.replaceFirstChar { it.uppercase() }
+                            ?: "Google User"
+                    AuthUser(user.uid, user.email, name, user.photoUrl?.toString())
                 }
             } catch (_: Exception) {
                 null
@@ -60,8 +65,12 @@ actual class AuthManager actual constructor() {
             firebaseAuth?.addAuthStateListener { auth ->
                 val user = auth.currentUser
                 _currentUser.value =
-                    user?.let {
-                        AuthUser(it.uid, it.email, it.displayName, it.photoUrl?.toString())
+                    user?.let { u ->
+                        val name =
+                            u.displayName?.takeIf { !it.isBlank() }
+                                ?: u.email?.substringBefore("@")?.replaceFirstChar { it.uppercase() }
+                                ?: "Google User"
+                        AuthUser(u.uid, u.email, name, u.photoUrl?.toString())
                     }
             }
         } catch (e: Exception) {
@@ -145,9 +154,28 @@ actual class AuthManager actual constructor() {
                 val authResult = auth.signInWithCredential(firebaseCredential).await()
                 val user = authResult.user
                 if (user != null) {
-                    val authUser = AuthUser(user.uid, user.email, user.displayName, user.photoUrl?.toString())
+                    val resolvedName =
+                        user.displayName?.takeIf { it.isNotBlank() }
+                            ?: googleIdTokenCredential.displayName?.takeIf { it.isNotBlank() }
+                            ?: "${googleIdTokenCredential.givenName.orEmpty()} ${googleIdTokenCredential.familyName.orEmpty()}".trim().takeIf { it.isNotBlank() }
+                            ?: user.email?.substringBefore("@")?.replaceFirstChar { it.uppercase() }
+                            ?: "Google User"
+
+                    if (user.displayName.isNullOrBlank() && resolvedName.isNotBlank()) {
+                        try {
+                            val profileUpdates =
+                                UserProfileChangeRequest
+                                    .Builder()
+                                    .setDisplayName(resolvedName)
+                                    .build()
+                            user.updateProfile(profileUpdates).await()
+                        } catch (_: Exception) {
+                        }
+                    }
+
+                    val authUser = AuthUser(user.uid, user.email, resolvedName, user.photoUrl?.toString())
                     _currentUser.value = authUser
-                    Logger.i(tag, "Google Sign-In successful for user: ${authUser.email} (${authUser.uid})")
+                    Logger.i(tag, "Google Sign-In successful for user: ${authUser.email} (${authUser.displayName})")
                     Result.success(authUser)
                 } else {
                     val err = Exception("Firebase sign-in failed: user is null")
@@ -190,7 +218,7 @@ actual class AuthManager actual constructor() {
                 Result.failure(err)
             }
         } catch (e: Exception) {
-            Logger.e(tag, "Email Sign-In threw exception for email: $email", e)
+            Logger.e(tag, "Email Sign-In threw exception", e)
             Result.failure(e)
         }
     }
@@ -220,19 +248,19 @@ actual class AuthManager actual constructor() {
                 Result.failure(err)
             }
         } catch (e: Exception) {
-            Logger.e(tag, "Email Sign-Up threw exception for email: $email", e)
+            Logger.e(tag, "Email Sign-Up threw exception", e)
             Result.failure(e)
         }
     }
 
     actual suspend fun signOut() {
-        Logger.i(tag, "Signing out user...")
+        Logger.i(tag, "Signing out...")
         try {
             firebaseAuth?.signOut()
+            _currentUser.value = null
             Logger.i(tag, "Sign-out successful")
         } catch (e: Exception) {
-            Logger.e(tag, "Error during sign-out", e)
+            Logger.e(tag, "Sign-out failed", e)
         }
-        _currentUser.value = null
     }
 }

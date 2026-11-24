@@ -14,6 +14,7 @@ interface GroceryRepository {
     suspend fun addItem(
         name: String,
         group: String = "General",
+        addedBy: String = "",
     )
 
     suspend fun addCategory(name: String)

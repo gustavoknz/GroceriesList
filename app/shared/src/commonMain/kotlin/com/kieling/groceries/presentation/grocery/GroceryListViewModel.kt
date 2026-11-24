@@ -136,19 +136,35 @@ class GroceryListViewModel(
             }
     }
 
+    private fun getCurrentUserDisplayName(): String {
+        val user = uiState.value.currentUser
+        return user?.displayName?.takeIf { it.isNotBlank() }
+            ?: user?.email?.substringBefore("@")?.replaceFirstChar { it.uppercase() }
+            ?: "Usuário"
+    }
+
     fun undoDelete() {
         val entity = deletedEntityFlow.value
         if (entity != null) {
             deletedEntityFlow.value = null
             deleteUndoJob?.cancel()
             viewModelScope.launch {
+                val author = getCurrentUserDisplayName()
                 when (entity) {
                     is DeletedEntity.Item -> {
-                        addGroceryItemUseCase(entity.item.name, entity.item.group)
+                        addGroceryItemUseCase(
+                            entity.item.name,
+                            entity.item.group,
+                            entity.item.addedBy.takeIf { it.isNotBlank() } ?: author,
+                        )
                     }
                     is DeletedEntity.Group -> {
                         entity.items.forEach { item ->
-                            addGroceryItemUseCase(item.name, item.group)
+                            addGroceryItemUseCase(
+                                item.name,
+                                item.group,
+                                item.addedBy.takeIf { it.isNotBlank() } ?: author,
+                            )
                         }
                     }
                 }
@@ -188,7 +204,8 @@ class GroceryListViewModel(
         val targetGroup = groupName.trim().ifBlank { "General" }
         if (trimmed.isNotBlank()) {
             viewModelScope.launch {
-                addGroceryItemUseCase(trimmed, targetGroup)
+                val author = getCurrentUserDisplayName()
+                addGroceryItemUseCase(trimmed, targetGroup, author)
             }
         }
     }

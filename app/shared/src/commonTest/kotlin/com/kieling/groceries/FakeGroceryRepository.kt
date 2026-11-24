@@ -39,10 +39,12 @@ class FakeGroceryRepository : GroceryRepository {
     override suspend fun addItem(
         name: String,
         group: String,
+        addedBy: String,
     ) {
         val trimmedName = name.trim()
         val normalizedName = trimmedName.lowercase()
         val targetGroup = group.trim().ifBlank { "General" }
+        val author = addedBy.takeIf { it.isNotBlank() } ?: "TestUser"
         if (!_categoryOrder.value.contains(targetGroup)) {
             _categoryOrder.value += targetGroup
         }
@@ -55,14 +57,14 @@ class FakeGroceryRepository : GroceryRepository {
             if (existingIndex != -1) {
                 current.mapIndexed { index, item ->
                     if (index == existingIndex) {
-                        item.copy(name = trimmedName, isChecked = false)
+                        item.copy(name = trimmedName, isChecked = false, addedBy = author)
                     } else {
                         item
                     }
                 }
             } else {
                 val newId = (current.maxOfOrNull { it.id } ?: 0) + 1
-                val newItem = GroceryItem(newId, trimmedName, group = targetGroup)
+                val newItem = GroceryItem(newId, trimmedName, group = targetGroup, addedBy = author)
                 current + newItem
             }
     }

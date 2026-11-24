@@ -33,6 +33,7 @@ import kotlin.time.Duration.Companion.seconds
 data class AddItemRequest(
     val name: String,
     val group: String = "General",
+    val addedBy: String? = null,
 )
 
 @Serializable
@@ -211,6 +212,7 @@ class GroceryRepositoryImpl(
     override suspend fun addItem(
         name: String,
         group: String,
+        addedBy: String,
     ) {
         val trimmed = name.trim()
         val targetGroup = group.trim().ifBlank { "General" }
@@ -218,15 +220,16 @@ class GroceryRepositoryImpl(
 
         val current = _items.value
         val userId = getUserId()
+        val author = addedBy.takeIf { it.isNotBlank() } ?: userId
         val existingIndex = current.indexOfFirst { it.name.trim().equals(trimmed, ignoreCase = true) && it.group == targetGroup }
         val optimisticList =
             if (existingIndex != -1) {
                 current.mapIndexed { index, item ->
-                    if (index == existingIndex) item.copy(name = trimmed, isChecked = false, addedBy = userId) else item
+                    if (index == existingIndex) item.copy(name = trimmed, isChecked = false, addedBy = author) else item
                 }
             } else {
                 val newId = (current.maxOfOrNull { it.id } ?: 0) + 1
-                current + GroceryItem(id = newId, name = trimmed, group = targetGroup, addedBy = userId)
+                current + GroceryItem(id = newId, name = trimmed, group = targetGroup, addedBy = author)
             }
         _items.value = optimisticList
 
@@ -236,7 +239,7 @@ class GroceryRepositoryImpl(
                     .post("$baseUrl/items") {
                         header("X-User-Id", userId)
                         contentType(ContentType.Application.Json)
-                        setBody(AddItemRequest(trimmed, targetGroup))
+                        setBody(AddItemRequest(trimmed, targetGroup, author))
                     }.body<List<GroceryItemDto>>()
                     .map { it.toDomain() }
             _items.value = updated

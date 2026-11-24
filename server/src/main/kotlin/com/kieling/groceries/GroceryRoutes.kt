@@ -143,15 +143,16 @@ fun Route.groceryRoutes() {
             categories.add(targetGroup)
             saveCategoryOrders(userCategoryOrderMap)
         }
+        val author = request.addedBy?.takeIf { it.isNotBlank() } ?: userId
         val updated =
             call.updateUserItems { list ->
                 val existingIndex = list.indexOfFirst { it.name.trim().lowercase() == normalizedName && it.group == targetGroup }
                 if (existingIndex != -1) {
                     val existing = list[existingIndex]
-                    list[existingIndex] = existing.copy(name = trimmedName, isChecked = false, addedBy = userId)
+                    list[existingIndex] = existing.copy(name = trimmedName, isChecked = false, addedBy = author)
                 } else {
                     val newId = (list.maxOfOrNull { it.id } ?: 0) + 1
-                    list.add(GroceryItem(id = newId, name = trimmedName, group = targetGroup, addedBy = userId))
+                    list.add(GroceryItem(id = newId, name = trimmedName, group = targetGroup, addedBy = author))
                 }
             }
         call.respond(updated)

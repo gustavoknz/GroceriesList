@@ -8,5 +8,6 @@ class AddGroceryItemUseCase(
     suspend operator fun invoke(
         name: String,
         group: String = "General",
-    ) = groceryRepository.addItem(name, group)
+        addedBy: String = "",
+    ) = groceryRepository.addItem(name, group, addedBy)
 }
