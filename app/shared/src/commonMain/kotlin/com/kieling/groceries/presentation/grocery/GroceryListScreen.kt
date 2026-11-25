@@ -56,7 +56,6 @@ import com.kieling.groceries.presentation.model.GroceryItemUi
 import grocerieslist.app.shared.generated.resources.Res
 import grocerieslist.app.shared.generated.resources.add_group_placeholder
 import grocerieslist.app.shared.generated.resources.add_item_placeholder
-import grocerieslist.app.shared.generated.resources.added_by
 import grocerieslist.app.shared.generated.resources.cancel
 import grocerieslist.app.shared.generated.resources.close
 import grocerieslist.app.shared.generated.resources.empty_list_subtitle
@@ -494,7 +493,7 @@ fun GroceryItemCard(
                     )
                     if (item.addedBy.isNotBlank()) {
                         Text(
-                            text = stringResource(Res.string.added_by, item.addedBy),
+                            text = "adicionado por ${item.addedBy}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                         )
