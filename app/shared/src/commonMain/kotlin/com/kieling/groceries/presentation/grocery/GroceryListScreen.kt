@@ -202,18 +202,18 @@ fun GroceryListContent(
         modifier =
             modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(horizontal = 12.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (uiState.lastDeletedName != null) {
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(2.dp))
             UndoBanner(
                 deletedName = uiState.lastDeletedName,
                 onUndo = onUndoDelete,
             )
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(2.dp))
 
         if (uiState.items.isEmpty() && uiState.groups.isEmpty()) {
             EmptyGroceryState(modifier = Modifier.fillMaxWidth().weight(1f))
@@ -223,7 +223,7 @@ fun GroceryListContent(
                     Modifier
                         .fillMaxWidth()
                         .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(1.dp),
+                verticalArrangement = Arrangement.spacedBy(0.dp),
             ) {
                 uiState.groups.forEach { group ->
                     item(key = "group_header_${group.name}") {
@@ -250,7 +250,7 @@ fun GroceryListContent(
                         TextField(
                             value = textValue,
                             onValueChange = { textValue = it },
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             placeholder = {
                                 Text(
                                     stringResource(Res.string.add_item_placeholder),
@@ -286,7 +286,9 @@ fun GroceryListContent(
                     TextField(
                         value = groupText,
                         onValueChange = { groupText = it },
-                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 2.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 2.dp),
                         placeholder = {
                             Text(
                                 stringResource(Res.string.add_group_placeholder),
@@ -330,7 +332,7 @@ fun UndoBanner(
         shape = MaterialTheme.shapes.small,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -400,20 +402,20 @@ fun GroceryGroupHeader(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(top = 2.dp)
+                .padding(top = 1.dp)
                 .clickable(onClick = onHeaderClick),
     ) {
         Row(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 2.dp),
+                    .padding(horizontal = 8.dp, vertical = 0.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Text(
                     text = groupName,
@@ -430,7 +432,7 @@ fun GroceryGroupHeader(
 
             IconButton(
                 onClick = onDeleteGroup,
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(28.dp),
             ) {
                 CloseIcon(tint = categoryContentColors[colorIndex])
             }
@@ -461,13 +463,13 @@ fun GroceryItemCard(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 2.dp),
+                    .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier.weight(1f),
             ) {
                 Checkbox(
@@ -475,10 +477,7 @@ fun GroceryItemCard(
                     onCheckedChange = { _ -> onToggle() },
                 )
                 Column(
-                    modifier =
-                        Modifier
-                            .clickable(onClick = onItemClick)
-                            .padding(vertical = 2.dp),
+                    modifier = Modifier.clickable(onClick = onItemClick),
                 ) {
                     Text(
                         text = item.name,
@@ -503,7 +502,7 @@ fun GroceryItemCard(
 
             IconButton(
                 onClick = onDelete,
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(28.dp),
             ) {
                 CloseIcon(tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f))
             }
