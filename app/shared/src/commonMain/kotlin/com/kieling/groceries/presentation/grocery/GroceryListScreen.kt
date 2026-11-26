@@ -286,9 +286,7 @@ fun GroceryListContent(
                     TextField(
                         value = groupText,
                         onValueChange = { groupText = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 2.dp),
+                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
                         placeholder = {
                             Text(
                                 stringResource(Res.string.add_group_placeholder),
