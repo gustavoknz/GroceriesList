@@ -3,7 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
-    id("com.google.gms.google-services")
+    alias(libs.plugins.googleServices)
 }
 
 val localProperties =

@@ -16,7 +16,7 @@ plugins {
     alias(libs.plugins.ktlint) apply false
     alias(libs.plugins.kotlinxSerialization) apply false
     alias(libs.plugins.kover) apply false
-    id("com.google.gms.google-services") version "4.5.0" apply false
+    alias(libs.plugins.googleServices) apply false
 }
 
 subprojects {
