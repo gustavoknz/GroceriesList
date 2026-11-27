@@ -23,7 +23,7 @@ androidxCredentialsVersion = "1.6.0"
 googleIdentityVersion = "1.2.1"
 kotlinxCoroutines = "1.11.0"
 kotlinxSerializationJsonVersion = "1.13.0"
-googleServices = "4.5.0"
+googleServices = "4.6.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
