@@ -10,6 +10,7 @@ data class GroceryItemDto(
     val isChecked: Boolean = false,
     val group: String = "General",
     val addedBy: String = "",
+    val createdAt: Long = 0L,
 )
 
 fun GroceryItemDto.toDomain(): GroceryItem =
@@ -19,6 +20,7 @@ fun GroceryItemDto.toDomain(): GroceryItem =
         isChecked = isChecked,
         group = group,
         addedBy = addedBy,
+        createdAt = createdAt,
     )
 
 fun GroceryItem.toDto(): GroceryItemDto =
@@ -28,4 +30,5 @@ fun GroceryItem.toDto(): GroceryItemDto =
         isChecked = isChecked,
         group = group,
         addedBy = addedBy,
+        createdAt = createdAt,
     )

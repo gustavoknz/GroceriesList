@@ -14,3 +14,8 @@ class JsPlatform : Platform {
 }
 
 actual fun getPlatform(): Platform = JsPlatform()
+
+actual fun getCurrentTimestamp(): Long =
+    kotlin.js.Date
+        .now()
+        .toLong()

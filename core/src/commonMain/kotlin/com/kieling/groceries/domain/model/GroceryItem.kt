@@ -9,4 +9,5 @@ data class GroceryItem(
     val isChecked: Boolean = false,
     val group: String = "General",
     val addedBy: String = "",
+    val createdAt: Long = 0L,
 )

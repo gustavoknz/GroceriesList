@@ -1,7 +1,12 @@
 package com.kieling.groceries
 
-class WasmPlatform : Platform {
-    override val name: String = "Web with Kotlin/Wasm"
+import kotlin.js.ExperimentalWasmJsInterop
+
+class WasmJsPlatform : Platform {
+    override val name: String = "WasmJS"
 }
 
-actual fun getPlatform(): Platform = WasmPlatform()
+actual fun getPlatform(): Platform = WasmJsPlatform()
+
+@OptIn(ExperimentalWasmJsInterop::class)
+actual fun getCurrentTimestamp(): Long = js("Date.now()")

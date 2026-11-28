@@ -7,6 +7,7 @@ import com.kieling.groceries.domain.model.GroceryItem
 import com.kieling.groceries.domain.repository.AuthRepository
 import com.kieling.groceries.domain.repository.GroceryRepository
 import com.kieling.groceries.getApiBaseUrl
+import com.kieling.groceries.getCurrentTimestamp
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -34,6 +35,7 @@ data class AddItemRequest(
     val name: String,
     val group: String = "General",
     val addedBy: String? = null,
+    val createdAt: Long = 0L,
 )
 
 @Serializable
@@ -221,6 +223,7 @@ class GroceryRepositoryImpl(
         val current = _items.value
         val userId = getUserId()
         val author = addedBy.takeIf { it.isNotBlank() } ?: userId
+        val timestamp = getCurrentTimestamp()
         val existingIndex = current.indexOfFirst { it.name.trim().equals(trimmed, ignoreCase = true) && it.group == targetGroup }
         val optimisticList =
             if (existingIndex != -1) {
@@ -229,7 +232,7 @@ class GroceryRepositoryImpl(
                 }
             } else {
                 val newId = (current.maxOfOrNull { it.id } ?: 0) + 1
-                current + GroceryItem(id = newId, name = trimmed, group = targetGroup, addedBy = author)
+                current + GroceryItem(id = newId, name = trimmed, group = targetGroup, addedBy = author, createdAt = timestamp)
             }
         _items.value = optimisticList
 
@@ -239,7 +242,7 @@ class GroceryRepositoryImpl(
                     .post("$baseUrl/items") {
                         header("X-User-Id", userId)
                         contentType(ContentType.Application.Json)
-                        setBody(AddItemRequest(trimmed, targetGroup, author))
+                        setBody(AddItemRequest(trimmed, targetGroup, author, timestamp))
                     }.body<List<GroceryItemDto>>()
                     .map { it.toDomain() }
             _items.value = updated
